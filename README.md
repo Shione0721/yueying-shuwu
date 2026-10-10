@@ -4,7 +4,9 @@
 
 ## 下载
 
-- **一键包（推荐）**：[yueying-shuwu-v1.0.zip](https://github.com/Shione0721/yueying-shuwu/releases/latest/download/yueying-shuwu-v1.0.zip) —— 解压到任意固定文件夹，双击 `月影书屋.exe` 即可使用。
+- **在线网页版（零安装）**：<https://shione0721.github.io/yueying-shuwu/> —— 浏览器点开即玩，Mac / Windows / 手机都能用
+- **Windows 一键包（推荐）**：[yueying-shuwu-v1.0.zip](https://github.com/Shione0721/yueying-shuwu/releases/latest/download/yueying-shuwu-v1.0.zip) —— 解压到任意固定文件夹，双击 `月影书屋.exe` 即可使用。
+- **macOS 一键包**：[yueying-shuwu-mac-v1.0.zip](https://github.com/Shione0721/yueying-shuwu/releases/latest/download/yueying-shuwu-mac-v1.0.zip) —— 解压得到 `TarotDivine.app`，拖进「应用程序」；首次打开按住右键（或 Control 点按）选「打开」，再点「打开」（macOS 对未签名应用的常规步骤）。
 
 ## 功能
 
@@ -27,6 +29,7 @@
 ## 环境要求
 
 - Windows 10 / 11，需已安装 Microsoft Edge WebView2 Runtime（Windows 11 自带）
+- macOS 10.15+ 直接使用系统自带 WKWebView，无需额外安装；未签名应用首次需右键「打开」
 
 ## 开发
 
