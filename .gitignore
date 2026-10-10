@@ -1,0 +1,14 @@
+# 用户数据（抽签记录）
+tarot_data.json
+tarot_data.json.log
+
+# Python / PyInstaller
+__pycache__/
+*.py[cod]
+build/
+dist/
+*.spec
+
+# 系统
+Thumbs.db
+.DS_Store
