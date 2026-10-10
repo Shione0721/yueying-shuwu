@@ -1,0 +1,36 @@
+name: Build macOS app
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install pywebview pyinstaller "pyobjc-framework-Cocoa" "pyobjc-framework-WebKit"
+      - name: Build
+        run: |
+          cd src
+          python -m PyInstaller --onefile --windowed --clean --noconfirm \
+            --name TarotDivine \
+            --add-data "tarot.html:." \
+            --add-data "cards:cards" \
+            tarot.py
+      - name: Ad-hoc sign and zip
+        run: |
+          cd src/dist
+          codesign --force --deep --sign - TarotDivine.app
+          ditto -c -k --keepParent TarotDivine.app 月影书屋-mac.zip
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yueying-shuwu-mac
+          path: src/dist/月影书屋-mac.zip

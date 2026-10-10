@@ -17,11 +17,18 @@ def resource_path(rel):
 
 
 def file_url(path):
-    return "file:///" + quote(os.path.abspath(path).replace("\\", "/"), safe="/:")
+    p = os.path.abspath(path).replace("\\", "/")
+    if p.startswith("/"):
+        return "file://" + quote(p, safe="/:")
+    return "file:///" + quote(p, safe="/:")
 
 
 def data_path():
     if getattr(sys, "frozen", False):
+        if sys.platform == "darwin":
+            base = os.path.join(os.path.expanduser("~"), "Library", "Application Support", "月影书屋")
+            os.makedirs(base, exist_ok=True)
+            return os.path.join(base, "tarot_data.json")
         return os.path.join(os.path.dirname(sys.executable), "tarot_data.json")
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), "tarot_data.json")
 

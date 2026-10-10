@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月影书屋 · made by 汐宁</title>
+<style>
+
+  :root{
+    --pink:#d9a066; --purple:#8f86b8; --deep:#241a3d; --gold:#e0b96a;
+    --cream:#f3ecd7; --line:#e8c9a0;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",sans-serif;
+    color:#fff; overflow-x:hidden;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(143,134,184,.35), transparent 60%),
+      radial-gradient(1000px 700px at 110% 20%, rgba(217,160,102,.30), transparent 60%),
+      radial-gradient(900px 700px at 50% 120%, rgba(133,144,138,.18), transparent 60%),
+      linear-gradient(160deg,#17112d 0%, #2c2052 45%, #3b2a62 100%);
+    min-height:100vh;
+  }
+  #stars{ position:fixed; inset:0; pointer-events:none; z-index:0; }
+
+  .wrap{ position:relative; z-index:1; max-width:1120px; margin:0 auto; padding:34px 22px 60px; }
+
+  .header{ text-align:center; margin-bottom:8px; }
+  .ribbon .title{
+    font-size:40px; font-weight:900; letter-spacing:2px;
+    background:linear-gradient(90deg,#e0b96a,#d9a066,#b8a6d9,#e0b96a);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 0 24px rgba(217,160,102,.45);
+  }
+  .subtitle{ color:#e2d9ee; font-size:15px; margin-top:8px; letter-spacing:3px; opacity:.9; }
+  .divider{ width:220px; height:2px; margin:18px auto 0;
+    background:linear-gradient(90deg,transparent,#e8c9a0,transparent); }
+  .mode-bar{ margin-top:14px; }
+  .mode-toggle{ border:2px solid rgba(232,201,160,.45); background:rgba(240,234,246,.06); color:#e8c9a0;
+    padding:8px 24px; border-radius:999px; cursor:pointer; font-size:14px; font-weight:700;
+    letter-spacing:2px; font-family:inherit; transition:.18s; }
+  .mode-toggle:hover{ transform:translateY(-2px); border-color:#e0b96a; box-shadow:0 6px 16px rgba(217,160,102,.3); }
+  .mode-hint{ margin-top:8px; font-size:12px; color:#8f86a8; letter-spacing:2px; text-align:center; }
+
+  .main-area{ margin-top:26px; display:flex; flex-direction:column; align-items:center; }
+  .stage{ perspective:1400px; }
+  .tarot-card{
+    width:270px; height:450px; position:relative; cursor:pointer;
+    transform-style:preserve-3d; transition:transform .9s cubic-bezier(.34,1.4,.64,1);
+    animation:floaty 4s ease-in-out infinite;
+  }
+  .tarot-card.flipped{ transform:rotateY(180deg); animation:none; }
+  .tarot-card.shake{ animation:shake .6s ease-in-out; }
+  @keyframes floaty{ 0%,100%{transform:translateY(0) rotateZ(-1deg);} 50%{transform:translateY(-12px) rotateZ(1deg);} }
+  @keyframes shake{ 0%,100%{transform:rotateZ(0);} 20%{transform:rotateZ(-6deg);} 40%{transform:rotateZ(5deg);} 60%{transform:rotateZ(-4deg);} 80%{transform:rotateZ(3deg);} }
+  .face{ position:absolute; inset:0; backface-visibility:hidden; border-radius:20px; }
+  .back{
+    background:
+      radial-gradient(circle at 50% 42%, rgba(224,185,106,.28), transparent 46%),
+      linear-gradient(160deg,#3d2f66,#2c1f4e);
+    border:3px solid var(--gold); box-shadow:0 14px 40px rgba(0,0,0,.5), inset 0 0 0 6px rgba(224,185,106,.12);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .back .back-inner{
+    width:78%; height:84%; border:2px solid rgba(224,185,106,.6); border-radius:16px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  }
+  .back .moon{ font-size:64px; color:#e0b96a; text-shadow:0 0 20px rgba(224,185,106,.8); }
+  .back .back-title{ font-size:22px; letter-spacing:4px; color:#e8c9a0; font-weight:700; }
+  .back .back-tip{ font-size:12px; color:#a394c0; letter-spacing:2px; }
+  .front{ transform:rotateY(180deg); background:#221733; box-shadow:0 14px 40px rgba(0,0,0,.55); }
+  .front svg{ width:100%; height:100%; display:block; border-radius:20px; }
+  .cardimg{ width:100%; height:100%; object-fit:cover; display:block; }
+  .front .cardimg{ border-radius:20px; }
+  .slot-card.reversed .cardimg{ transform:rotate(180deg); }
+
+  .hint{ margin-top:20px; font-size:14px; color:#c5b8e0; letter-spacing:2px; opacity:.9; }
+
+  .actions{ margin-top:16px; display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+  .btn{
+    border:none; cursor:pointer; font-family:inherit; font-size:15px; font-weight:700; letter-spacing:1px;
+    padding:12px 26px; border-radius:999px; color:#3a2b5e;
+    background:linear-gradient(135deg,#e0b96a,#d9a066);
+    box-shadow:0 6px 18px rgba(217,160,102,.4);
+    transition:transform .15s ease, box-shadow .15s ease, opacity .15s;
+  }
+  .btn:hover{ transform:translateY(-3px) scale(1.03); box-shadow:0 10px 24px rgba(217,160,102,.55); }
+  .btn:active{ transform:scale(.96); }
+  .btn.ghost{ background:rgba(255,255,255,.1); color:#e2d9ee; box-shadow:none; border:1px solid rgba(232,201,160,.4); }
+
+  .reading{ margin-top:34px; display:none; }
+  .reading.show{ display:block; animation:rise .7s ease; }
+  @keyframes rise{ from{opacity:0; transform:translateY(24px);} to{opacity:1; transform:translateY(0);} }
+  .panel{
+    background:rgba(36,26,61,.72); border:2px solid rgba(232,201,160,.28); border-radius:22px;
+    padding:28px; backdrop-filter:blur(8px);
+  }
+  .panel-head{ display:flex; gap:22px; align-items:flex-start; flex-wrap:wrap; }
+  .panel-card{ width:170px; height:283px; flex:0 0 auto; border-radius:14px; overflow:hidden;
+    box-shadow:0 10px 26px rgba(0,0,0,.5); }
+  .panel-card svg{ width:100%; height:100%; display:block; }
+  .panel-meta{ flex:1; min-width:260px; }
+  .card-name{ font-size:28px; font-weight:900; }
+  .card-name .en{ font-size:14px; color:#a99bd0; font-weight:600; margin-left:10px; letter-spacing:1px; }
+  .tags{ margin-top:12px; display:flex; flex-wrap:wrap; gap:8px; }
+  .tag{ font-size:12px; padding:5px 14px; border-radius:999px; background:rgba(217,160,102,.18);
+    border:1px solid rgba(217,160,102,.4); color:#e8c9a0; letter-spacing:1px; }
+  .tag.pos{ color:#f0d9a0; background:rgba(224,185,106,.15); border-color:rgba(224,185,106,.45); }
+  .meaning{ margin-top:18px; font-size:15px; line-height:1.9; color:#f2edf7; }
+
+  .split{ margin-top:22px; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:640px){ .split{ grid-template-columns:1fr; } }
+  .side{ border-radius:16px; padding:18px 20px; }
+  .side.up{ background:rgba(224,185,106,.12); border:1px solid rgba(224,185,106,.35); }
+  .side.rev{ background:rgba(143,134,184,.16); border:1px solid rgba(143,134,184,.4); }
+  .side h4{ font-size:16px; margin-bottom:10px; letter-spacing:2px; }
+  .side.up h4{ color:#e0b96a; }
+  .side.rev h4{ color:#b8a6d9; }
+  .side p{ font-size:14px; line-height:1.85; color:#f0eaf6; }
+
+  .aspects{ margin-top:22px; }
+  .aspects h4{ font-size:16px; letter-spacing:2px; color:#e8c9a0; margin-bottom:14px; }
+  .aspect-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  @media(max-width:720px){ .aspect-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media(max-width:440px){ .aspect-grid{ grid-template-columns:1fr; } }
+  .asp{ background:rgba(240,234,246,.05); border:1px solid rgba(232,201,160,.22); border-radius:14px; padding:14px 16px; }
+  .asp .ico{ font-size:18px; }
+  .asp .k{ font-size:13px; font-weight:800; color:#e8c9a0; margin:6px 0 4px; letter-spacing:1px; }
+  .asp .v{ font-size:13px; line-height:1.75; color:#ede6f5; }
+
+  .regen{ margin-top:22px; text-align:center; }
+  .date-line{ margin-top:10px; font-size:13px; color:#a394c0; letter-spacing:1px; }
+
+  .codex{ margin-top:56px; }
+  .codex h2{ text-align:center; font-size:24px; letter-spacing:3px; color:#e8c9a0; }
+  .codex-grid{ margin-top:22px; display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:14px; }
+  .suit-title{ grid-column:1/-1; margin-top:14px; font-size:16px; font-weight:800; color:#e8c9a0; letter-spacing:2px; text-align:center; text-shadow:0 2px 8px rgba(0,0,0,.5); }
+  .codex-card{ border-radius:14px; overflow:hidden; cursor:pointer; position:relative;
+    box-shadow:0 6px 16px rgba(0,0,0,.4); transition:transform .18s ease, box-shadow .18s ease; }
+  .codex-card:hover{ transform:translateY(-5px); box-shadow:0 12px 26px rgba(0,0,0,.55); }
+  .codex-card svg{ width:100%; display:block; }
+  .codex-card .label{ position:absolute; left:0; right:0; bottom:0; padding:6px 4px; text-align:center;
+    font-size:12px; font-weight:700; background:linear-gradient(transparent, rgba(20,10,40,.85)); letter-spacing:1px; }
+
+  .footer{ margin-top:50px; text-align:center; font-size:12px; color:#8f86a8; letter-spacing:2px; line-height:2; } .footer .credit{ font-size:11px; color:#7a7395; letter-spacing:1px; opacity:.9; }
+
+
+  /* tab 导航 */
+  .tabs{ display:flex; justify-content:center; gap:12px; margin-top:24px; }
+  .tab{ border:2px solid rgba(232,201,160,.35); background:rgba(240,234,246,.05); color:#e2d9ee;
+    padding:10px 30px; border-radius:999px; cursor:pointer; font-size:15px; font-weight:700;
+    letter-spacing:2px; font-family:inherit; transition:.18s; }
+  .tab:hover{ transform:translateY(-2px); }
+  .tab.active{ background:linear-gradient(135deg,#e0b96a,#d9a066); color:#3a2b5e; border-color:transparent;
+    box-shadow:0 6px 18px rgba(217,160,102,.4); }
+  /* 占卜面板 */
+  .divine-box{ margin-top:24px; background:rgba(36,26,61,.55); border:2px solid rgba(232,201,160,.22);
+    border-radius:22px; padding:28px; }
+  .divine-step h3{ font-size:17px; letter-spacing:2px; color:#e8c9a0; margin-bottom:14px; }
+  .divine-step + .divine-step{ margin-top:24px; }
+  .aspect-chips{ display:flex; flex-wrap:wrap; gap:10px; }
+  .chip{ padding:10px 20px; border-radius:999px; cursor:pointer; border:2px solid rgba(232,201,160,.35);
+    background:rgba(240,234,246,.05); color:#f0eaf6; font-size:14px; transition:.15s; }
+  .chip:hover{ transform:translateY(-2px); border-color:#e0b96a; }
+  .chip.sel{ background:linear-gradient(135deg,#e0b96a,#d9a066); color:#3a2b5e; border-color:transparent; font-weight:800; }
+  .spread-cards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(158px,1fr)); gap:12px; }
+  .spread-card{ padding:14px 12px; border-radius:14px; cursor:pointer; text-align:center;
+    background:rgba(240,234,246,.05); border:2px solid rgba(232,201,160,.22); transition:.15s; }
+  .spread-card:hover{ transform:translateY(-3px); border-color:#b8a6d9; }
+  .spread-card.sel{ border-color:#e0b96a; background:rgba(224,185,106,.14); }
+  .spread-card .s-name{ font-weight:800; color:#e8c9a0; font-size:14px; }
+  .spread-card .s-cards{ font-size:12px; color:#a99bd0; margin:5px 0 3px; }
+  .spread-card .s-desc{ font-size:11px; color:#a394c0; line-height:1.5; }
+  .divine-actions{ margin-top:26px; text-align:center; }
+  .divine-title{ text-align:center; font-size:19px; font-weight:800; color:#f0d9a0; letter-spacing:2px; margin-bottom:16px; }
+  .slots-grid{ display:grid; gap:14px; margin-top:16px; }
+  .slots-grid.cols-1{ grid-template-columns:minmax(0,300px); justify-content:center; }
+  .slots-grid.cols-3{ grid-template-columns:repeat(3,1fr); }
+  .slots-grid.cols-4{ grid-template-columns:repeat(4,1fr); }
+  @media(max-width:920px){ .slots-grid.cols-3,.slots-grid.cols-4{ grid-template-columns:repeat(2,1fr); } }
+  @media(max-width:540px){ .slots-grid.cols-3,.slots-grid.cols-4{ grid-template-columns:1fr; } }
+  .slot{ background:rgba(240,234,246,.05); border:1px solid rgba(232,201,160,.22); border-radius:16px; padding:16px; }
+  .slot-pos{ font-size:13px; font-weight:800; color:#e0b96a; letter-spacing:1px; margin-bottom:10px; }
+  .slot-card{ width:150px; height:250px; margin:0 auto; border-radius:12px; overflow:hidden; box-shadow:0 8px 20px rgba(0,0,0,.45); }
+  .slot-card svg{ width:100%; height:100%; display:block; transition:transform .8s ease; }
+  .slot-card.reversed svg{ transform:rotate(180deg); }
+  .slot-name{ text-align:center; font-size:16px; font-weight:800; margin-top:10px; color:#fff; }
+  .rev-tag{ display:inline-block; font-size:11px; padding:2px 9px; border-radius:999px; margin-left:6px; }
+  .rev-tag.up{ background:rgba(224,185,106,.25); color:#f0d9a0; }
+  .rev-tag:not(.up){ background:rgba(143,134,184,.3); color:#b8a6d9; }
+  .slot-read{ font-size:13px; line-height:1.8; color:#ede6f5; margin-top:8px; }
+  .guide-box{ margin-top:20px; padding:16px 20px; border-radius:14px; background:rgba(224,185,106,.1);
+    border:1px solid rgba(224,185,106,.3); font-size:14px; line-height:1.8; color:#f0d9a0; }
+
+</style>
+</head>
+<body>
+
+<div id="stars"></div>
+<div class="wrap">
+  <div class="header">
+    <div class="ribbon"><span class="title">✨ 月影书屋 ✨</span></div>
+    <div class="subtitle">— 聆听星月的声音 —</div>
+    <div class="mode-bar"><button class="mode-toggle" id="btnMode" title="点击切换牌组模式">🔮 标准塔罗 · 78张 ⇄</button><div class="mode-hint">点击切换 22 大阿卡纳 / 78 标准塔罗</div></div>
+    <div class="divider"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="daily">🌙 每日一签</button>
+    <button class="tab" data-tab="divine">🔮 主题占卜</button>
+  </div>
+
+  <div id="dailyPanel">
+    <div class="main-area">
+      <div class="stage">
+        <div class="tarot-card" id="tarot">
+          <div class="face back">
+            <div class="back-inner">
+              <span class="moon">☾</span>
+              <span class="back-title">今日塔罗</span>
+              <span class="back-tip">轻触牌背 抽取今日指引</span>
+            </div>
+          </div>
+          <div class="face front" id="faceBox"></div>
+        </div>
+      </div>
+      <div class="hint" id="hint">👆 点一下牌背，抽取属于你今天的塔罗牌</div>
+      <div class="actions" id="actions">
+        <button class="btn ghost" id="btnAgain" style="display:none">🎲 再抽一张（娱乐）</button>
+      </div>
+    </div>
+    <div class="reading" id="reading"></div>
+  </div>
+
+  <div id="divinePanel" style="display:none">
+    <div class="divine-box">
+      <div class="divine-step">
+        <h3>① 选择你想占卜的方面</h3>
+        <div class="aspect-chips" id="aspectChips"></div>
+      </div>
+      <div class="divine-step">
+        <h3>② 选择一个牌阵</h3>
+        <div class="spread-cards" id="spreadCards"></div>
+      </div>
+      <div class="divine-actions">
+        <button class="btn" id="btnDivine">✨ 开始占卜</button>
+      </div>
+      <div class="divine-result" id="divineResult"></div>
+    </div>
+  </div>
+
+  <div class="codex">
+    <h2>✦ 牌意图鉴 ✦</h2>
+    <div class="codex-grid" id="codexGrid"></div>
+  </div>
+
+  <div class="footer">
+    每日一签 · 主题占卜 · <span id="footInfo">图鉴全览 78 张牌</span><br>
+    占卜仅供娱乐，人生由你自己书写呀 ✧(≖ ◡ ≖✿)<br>
+    <span class="credit">卡面图片来自《Mystical Manga Tarot》塔罗牌组（elvitarot.com），版权归原作者所有，仅供个人学习与展示</span>
+  </div>
+</div>
+
+<script>
+var CARDS = [
+  { id:0, name:"愚者", en:"The Fool", num:"0", keys:["新的开始", "冒险", "纯真", "信念"],
+    meaning:"原意：愚者是准备启程的冒险者与新生灵魂，仅带着天赋与对灵魂使命的认知踏上未知。身旁忠犬象征与物质宇宙之网相连的直觉。",
+    up:"正位：崭新的开始需要勇气、信念，以及迈出他人眼中可能「愚笨」那一步的决心。听从本能，纵然恐惧仍向前走，相信旅程自会带来必要的经验。",
+    rev:"逆位：问问自己，是真正在跟随直觉，还是被恐惧与愚昧拦住了脚步。",
+    asp:{love:"轻松随缘，享受当下的心动，别急着给关系下定义。",work:"适合大胆尝试新方向，跳槽或创业皆有生机。",study:"保持好奇心，别怕犯错，探索比成绩更重要。",money:"先积累储蓄，忌冲动消费与盲目投资。",social:"真诚坦率的你自带吸引力，朋友会越来越多。",health:"活力满满，多出门走走晒晒太阳。"},
+    art:{hair:"#f7d794",eye:"#54a0ff",theme:["#e0b96a","#f78c6b"],accent:"#f0d9a0",style:"short",symbol:"❀"} },
+  { id:1, name:"魔术师", en:"The Magician", num:"I", keys:["显化", "技能", "创造", "行动"],
+    meaning:"原意：魔术师是那个外向、乐于探索的自我，去认识世界、磨炼技艺，并驾驭个人力量将意志显化为现实。他身边环绕四元素——剑之风、杖之火、杯之水、币之土。",
+    up:"正位：象征力量、技艺、领悟与创造的能力，但真正的洞见需要看见表象之外的可能。大胆自信、果断行动，走出舒适区。",
+    rev:"逆位：警惕恐惧与自我设限，它们正阻碍你继续成长。",
+    asp:{love:"主动出击、制造浪漫，你会成为关系里的魔法师。",work:"把握眼前机会，充分展现自己的才华。",study:"方法得当、举一反三，难题迎刃而解。",money:"开源有方、正财稳健，善用资源。",social:"沟通能力强、气场十足，很受欢迎。",health:"状态良好，注意用眼与颈椎。"},
+    art:{hair:"#c792ea",eye:"#e0b96a",theme:["#ef476f","#e0b96a"],accent:"#e0b96a",style:"twinbun",symbol:"∞"} },
+  { id:2, name:"女祭司", en:"The High Priestess", num:"II", keys:["直觉", "潜意识", "静观", "内在智慧"],
+    meaning:"原意：女祭司是内向、直觉的那一半自我，探索看不见的内在领域，尊重非理性的认知方式。她感知着塑造宇宙与灵魂的暗流，以内在的平静对照外在的行动。",
+    up:"正位：关键因素往往藏于表面之下，甚至显得隐秘、不合常理。此时应倚重内在智慧，而非眼前的境况。",
+    rev:"逆位：去审视那些被隐藏的真相与秘密，学着信任心灵深处安静的指引。",
+    asp:{love:"慢热而深情，先聆听内心，再决定是否靠近。",work:"幕后谋划、时机未到，耐心沉淀。",study:"静心钻研，灵感往往在独处时闪现。",money:"稳健储蓄，重大决定凭直觉多核实。",social:"保持适当距离，反而更能看清人心。",health:"关注睡眠与情绪，让心安静下来。"},
+    art:{hair:"#a8c7ff",eye:"#7c5cbf",theme:["#3d5a80","#293241"],accent:"#a394c0",style:"long",symbol:"☽"} },
+  { id:3, name:"皇后", en:"The Empress", num:"III", keys:["滋养", "丰饶", "母性", "边界"],
+    meaning:"原意：皇后是滋养、丰饶与家庭智慧的化身，代表母性关怀与大地生灭的循环。她象征丰盛与繁荣，也提醒你：丰盛需要持续的照料、滋养与健康的边界。",
+    up:"正位：厘清你最珍视的价值，专注培育你真正想生长的，同时守好边界——过度付出与疏忽同样有害。",
+    rev:"逆位：检视内心是否藏着「匮乏」的念头，以及那些从家庭继承而来的不健康模式。",
+    asp:{love:"温柔体贴、感情升温，关系充满幸福感。",work:"创意迸发、成果丰硕，受领导赏识。",study:"得心应手，被师长同学喜爱。",money:"收入稳定，享受生活也别忘了规划。",social:"人缘极佳，乐于照顾人的你闪闪发光。",health:"状态佳，注意饮食均衡、别贪甜。"},
+    art:{hair:"#ffd6a5",eye:"#ff8fab",theme:["#ff8fab","#8ac926"],accent:"#e0b96a",style:"long",symbol:"✿"} },
+  { id:4, name:"皇帝", en:"The Emperor", num:"IV", keys:["秩序", "权威", "责任", "规划"],
+    meaning:"原意：皇帝是权威、结构与对资源负责管理的象征，无论在家、组织还是更大的共同体中。他看重计划、逻辑，以及对资源的分派与保全。",
+    up:"正位：制定清晰的目标与务实的计划，用理性与常识打理好你的需求与责任。权力越大，责任越重。",
+    rev:"逆位：留意是否失去了自主权、是否效率低下，或与周遭的价值观念产生了冲突。",
+    asp:{love:"稳重可靠、主动主导，给对方十足安全感。",work:"升职掌权、规划清晰，执行力超强。",study:"自律严格、目标明确，成绩稳步上升。",money:"稳健理财、擅长积累，财富渐增。",social:"有威严、可依靠，是团队的主心骨。",health:"体质强健，注意避免过劳。"},
+    art:{hair:"#e63946",eye:"#ff9f1c",theme:["#d90429","#e0b96a"],accent:"#e0b96a",style:"short",symbol:"♛"} },
+  { id:5, name:"教皇", en:"The Hierophant", num:"V", keys:["传统", "信念", "指引", "真实"],
+    meaning:"原意：教皇是内在价值与外在行动之间的桥梁，教人如何真实地活。他指向教育、仪式、文化与信仰等传统结构，它们塑造着人的行为与承诺。",
+    up:"正位：检视你的行动是否与你最深的信念一致，让行为与内心对齐。",
+    rev:"逆位：问自己——我活的是自己认定的真理，还是别人强加的？对传统的背离，究竟是叛逆，还是深思后的选择？",
+    asp:{love:"传统而认真，感情易获得家人认可。",work:"体制内或稳定环境吃香，易被提携。",study:"循规蹈矩、有名师指点，稳步精进。",money:"按部就班、稳中有升，宜长线。",social:"受人尊重、尊师重道，口碑很好。",health:"规律作息、遵医嘱，身体无恙。"},
+    art:{hair:"#c9a06c",eye:"#57cc99",theme:["#7209b7","#e0b96a"],accent:"#e0b96a",style:"short",symbol:"✝"} },
+  { id:6, name:"恋人", en:"The Lovers", num:"VI", keys:["结合", "选择", "心灵", "渴望"],
+    meaning:"原意：恋人牌是愚者与艰难抉择的相遇，尤其在爱情里，社会期望与个人渴望相互拉扯。有些决定没有逻辑上的标准答案，只能由心灵与灵魂来选。",
+    up:"正位：头脑、心灵与外界压力在内心交战，而心灵才是最真实的向导。",
+    rev:"逆位：检视你是否在否认自己的渴望，又是什么隐藏的动机在左右你的选择。",
+    asp:{love:"甜蜜升温、心灵相通，正是告白或更进一步的好时机。",work:"合作共赢、团队融洽，默契带来效率。",study:"找到志同道合的伙伴，协同进步。",money:"合作生财，签约前务必看清条款。",social:"关系和谐、桃花旺盛，人气高涨。",health:"身心愉悦，注意情绪起伏。"},
+    art:{hair:"#ffb3c6",eye:"#c98971",theme:["#c98971","#4cc9f0"],accent:"#e8c9a0",style:"twintail",symbol:"♡"} },
+  { id:7, name:"战车", en:"The Chariot", num:"VII", keys:["行动", "掌控", "前进", "勇气"],
+    meaning:"原意：战车宣告：即便自觉青涩笨拙，也到了执掌缰绳、向前迈进的时刻。行动先于完美——当你握住缰绳、开始检验身手，进步便已发生。",
+    up:"正位：处境或许陌生、令人不安，但你可以在行进中不断调整。",
+    rev:"逆位：犹豫、自我怀疑、坐等他人决断，都提示你该去补齐那项欠缺的能力。",
+    asp:{love:"主动追求、势不可挡，用真诚打动对方。",work:"披荆斩棘、达成目标，冲劲十足。",study:"全力以赴、冲刺高分，别松懈。",money:"进取生财、机会增多，忌冒进。",social:"强势有魅力，注意收敛锋芒。",health:"精力旺盛，记得劳逸结合。"},
+    art:{hair:"#4361ee",eye:"#e0b96a",theme:["#4895ef","#e7e7ff"],accent:"#e0b96a",style:"long",symbol:"⚔"} },
+  { id:8, name:"力量", en:"Strength", num:"VIII", keys:["勇气", "疗愈", "内在力量", "面对阴影"],
+    meaning:"原意：力量牌是愚者觉醒的意志——他拒绝被命运摆布，开始正视外界的期待与内心溃烂已久的旧伤。它说的是面对阴影的艰难勇气：承认那些曾紧抓的信念已不再有用。",
+    up:"正位：深入阴影去疗愈伤口、收回被否认的那部分自己，由此长出不可动摇的内在自信。",
+    rev:"逆位：留意你的「投射」——你在他人身上看到的毛病，常常正映照着你自己未曾审视的恐惧与缺陷。",
+    asp:{love:"温柔坚定、以心换心，感情细水长流。",work:"沉稳应对挑战、厚积薄发。",study:"持之以恒、攻克难关，慢即是快。",money:"量入为出、渐入佳境，守得住财。",social:"亲和有力、善解人意，很得人缘。",health:"身心强健，锻炼增强韧性。"},
+    art:{hair:"#ff9f1c",eye:"#e0b96a",theme:["#ff9f1c","#e0b96a"],accent:"#e0b96a",style:"long",symbol:"♌"} },
+  { id:9, name:"隐者", en:"The Hermit", num:"IX", keys:["内省", "独处", "真理", "审视"],
+    meaning:"原意：隐者是在幻灭之后退离人群、重新审视信念、与自己的内心商谈。有限的内在之光只照亮下一步，却比外界灌输的世界观更真实。",
+    up:"正位：外界的喧嚣——社会、亲友、兜售建议的人——给不了你真正需要的答案。停止输入，用你的心、脑与灵魂去质疑一切，只留下经得起检验的。",
+    rev:"逆位：别用社交或他人的意见，来逃避那些你必须独自面对的想法。",
+    asp:{love:"冷静审视、慢热专一，感情藏得深。",work:"深耕专业、独立完成，价值被看见。",study:"独自钻研、领悟深刻，适合攻克难点。",money:"节俭自足，暂不宜大额投资。",social:"享受独处、深交不多，但都真诚。",health:"注意作息，舒缓压力、别熬夜。"},
+    art:{hair:"#b8b8d1",eye:"#2ec4b6",theme:["#495057","#e0b96a"],accent:"#f0d9a0",style:"long",symbol:"✦"} },
+  { id:10, name:"命运之轮", en:"Wheel of Fortune", num:"X", keys:["转机", "循环", "选择", "觉醒"],
+    meaning:"原意：命运之轮描绘那些重复的循环——即便渴望改变，仍被拉回熟悉而令人沮丧的老路。时间与际遇如轮转动，时好时坏；你无法左右轮盘抛出什么，却能左右自己如何回应。",
+    up:"正位：运用你的意志，主动选择如何行动，而不是让命运或习惯替你决定。",
+    rev:"逆位：诚实反思：你究竟卡在哪里，又在反复重演哪些模式？",
+    asp:{love:"缘分悄然到来，转角就可能遇见对的人。",work:"时来运转、机遇敲门，大胆把握。",study:"豁然开朗，成绩虽有起伏整体向好。",money:"运势回升，或有意外之财，谨慎处置。",social:"结识贵人，人际关系迎来新变化。",health:"整体向好，注意小波动及时调整。"},
+    art:{hair:"#b388eb",eye:"#e0b96a",theme:["#9d4edd","#e0b96a"],accent:"#e0b96a",style:"twintail",symbol:"☸"} },
+  { id:11, name:"正义", en:"Justice", num:"XI", keys:["公平", "因果", "承担", "真相"],
+    meaning:"原意：正义教导我们，公平是复杂的——人的规则与业力法则都在左右结果。行动必有后果，意图决定你如何塑造未来。",
+    up:"正位：人们正得到与自身行为相称的结果，尽管世俗的公正未必完美。应得的就坦然接受，行事正当就坚守立场，做错了就决心改过。",
+    rev:"逆位：检视你是否在责怪他人，或者否定了某人应得的公正。",
+    asp:{love:"真诚对等、坦诚相待，关系稳固。",work:"公平竞争、凭实力说话，结果公正。",study:"一分耕耘一分收获，别心存侥幸。",money:"收支平衡、按规矩办事，心安理得。",social:"公正客观、不偏不倚，赢得信赖。",health:"注意作息规律，让身心保持平衡。"},
+    art:{hair:"#e5e5e5",eye:"#e5383b",theme:["#4361ee","#f8f9fa"],accent:"#e0b96a",style:"short",symbol:"⚖"} },
+  { id:12, name:"倒吊人", en:"The Hanged Man", num:"XII", keys:["换位思考", "臣服", "等待", "放下"],
+    meaning:"原意：倒吊人是有意识地背离社会期望，甘愿承受依内心信念行事而来的后果。决断之后的悬置与臣服：身体停下，头脑与心却依然醒着。",
+    up:"正位：静下来、耐心等待，以冥想或祈祷在无法改变的结局前寻得平静。",
+    rev:"逆位：自问是否不该放弃的放弃了、是否成了无谓的殉道者，或交出了本应牢牢握住的掌控权。",
+    asp:{love:"为爱付出、需要等待，感情在考验中沉淀。",work:"沉淀蓄力、调整方向，别急着求成。",study:"换个学习方法，别在死胡同里钻牛角尖。",money:"暂缓重大决策，避免不必要的损失。",social:"包容理解、看淡得失，心态平和。",health:"放慢节奏，注意血液循环与肩颈。"},
+    art:{hair:"#8d99ae",eye:"#57cc99",theme:["#2ec4b6","#e0b96a"],accent:"#e0b96a",style:"short",symbol:"▽"} },
+  { id:13, name:"死神", en:"Death", num:"XIII", keys:["结束", "转变", "重生", "放下"],
+    meaning:"原意：死神牌是深刻的蜕变——那些不再服务于你之物自然终结，为更真实的自己腾出重生之路。如同毛毛虫化蝶，旧身份被蜕去。",
+    up:"正位：改变虽必要、终将带来自由，却伴随着必须被承认与哀悼的失去。接纳并放手，而非抗拒。",
+    rev:"逆位：问问自己在哪里紧紧抓着不放、又在何处停滞不前。",
+    asp:{love:"旧情了断、迎来新缘，或关系迈入新阶段。",work:"结束旧项目、转岗跳槽，重新出发。",study:"告别旧方法，重头开始未必是坏事。",money:"及时止损、清理旧账，重整旗鼓。",social:"清理无效社交，把时间留给值得的人。",health:"排毒调理、焕然一新，重启好习惯。"},
+    art:{hair:"#343a40",eye:"#9d4edd",theme:["#212529","#e5383b"],accent:"#ff8fab",style:"long",symbol:"☠"} },
+  { id:14, name:"节制", en:"Temperance", num:"XIV", keys:["平衡", "调和", "从容", "信任"],
+    meaning:"原意：节制是对立面的和谐融合——内在清明，便能在自信与从容中前行。它把理性与直觉调和到恰到好处的比例，产生近乎神奇的成效。",
+    up:"正位：信任你的内在声音，找到那个让一切行动与抉择都恰到好处、轻松完美的平衡点。",
+    rev:"逆位：警惕自我破坏、抗拒轻松，或宁可在戏剧与挣扎中打转，也不愿选择平静。",
+    asp:{love:"细水长流、相互磨合，感情温润而长久。",work:"协调各方、稳步推进，团队和谐。",study:"劳逸结合、循序渐进，效率更高。",money:"收支有度、细水长流，宜长期规划。",social:"温和包容、善于化解矛盾。",health:"调理平衡，戒除熬夜与暴饮暴食。"},
+    art:{hair:"#80ed99",eye:"#e0b96a",theme:["#80ed99","#f8f9fa"],accent:"#e0b96a",style:"long",symbol:"♒"} },
+  { id:15, name:"恶魔", en:"The Devil", num:"XV", keys:["束缚", "欲望", "挣脱", "觉察"],
+    meaning:"原意：恶魔牌是受困于不健康、不真实的关系或习惯——它们抗拒改变。当你试图改变时，旧体系会拼命维系旧模式，翻出旧伤与冲动来考验你。",
+    up:"正位：这些处境虽令人窒息，却也是礼物，能帮你坚定决定、巩固新习惯。你有挣脱的能力，尤其凭借决心与外部帮助。",
+    rev:"逆位：诚实自问：哪些习惯在掌控你？又是怎样的「好处」让它们一直留着？",
+    asp:{love:"强烈吸引，但注意控制欲与占有欲。",work:"野心驱动前进，提防利益陷阱。",study:"诱惑干扰多，自律是制胜关键。",money:"忌贪婪、防骗局，天上不会掉馅饼。",social:"谨慎利益往来，保持清醒的边界。",health:"警惕成瘾，规律生活、管住欲望。"},
+    art:{hair:"#9d0208",eye:"#ffb703",theme:["#6a040f","#17112d"],accent:"#ffb703",style:"twinbun",symbol:"♆"} },
+  { id:16, name:"高塔", en:"The Tower", num:"XVI", keys:["骤变", "崩塌", "释放", "重建"],
+    meaning:"原意：高塔是因个人蜕变而触发的旧结构骤然崩塌，常发生在一段内心挣扎之后。混乱与失去虽痛，却为更健康的体系与新生长腾出了空间。",
+    up:"正位：请放心——并非一切都会被摧毁，只有那些不再服务于你最高利益的部分。让拆解自然发生，抢救尚存之物，别制造戏剧、别自我破坏。",
+    rev:"逆位：抗拒改变、拖延面对，只会让崩塌更剧烈；主动拆解旧结构，方能更快地重建新生。",
+    asp:{love:"关系迎来巨变，重新审视彼此。",work:"突发变故、计划打乱，冷静应对破局。",study:"计划被打乱，及时调整节奏。",money:"警惕突发损失，提前做好防备。",social:"冲突爆发、真相大白，坦然沟通。",health:"注意意外磕碰，防患于未然。"},
+    art:{hair:"#adb5bd",eye:"#4cc9f0",theme:["#343a40","#e0b96a"],accent:"#f0d9a0",style:"short",symbol:"⚡"} },
+  { id:17, name:"星星", en:"The Star", num:"XVII", keys:["希望", "疗愈", "指引", "恢复"],
+    meaning:"原意：星星是试炼后的休息、疗愈与更新，让身心得以恢复。它象征找到那颗指路的「北极星」，在困惑迷失时给予方向与慰藉；清凉的流水与莲花带来净化、灵感与安抚。",
+    up:"正位：放慢脚步、好好恢复，并认清你的指引所在，好在任何境况下都能一眼认出它。",
+    rev:"逆位：检视你是否藏起了自己的光芒，并想想：从哪里能找回你需要的疗愈与休整？",
+    asp:{love:"温暖治愈、真心相伴，感情带来安慰。",work:"前景光明、静待花开，积累正当时。",study:"目标清晰、稳步提升，看到进步。",money:"收支平稳、渐入佳境，可稍作规划。",social:"真诚温暖、人缘上升，被温柔以待。",health:"身心放松、恢复活力，多亲近自然。"},
+    art:{hair:"#90e0ef",eye:"#4361ee",theme:["#023e8a","#e7e7ff"],accent:"#e0b96a",style:"long",symbol:"★"} },
+  { id:18, name:"月亮", en:"The Moon", num:"XVIII", keys:["幻象", "潜意识", "不安", "耐心"],
+    meaning:"原意：月亮是迷惘与幻象的时期——表象带有欺骗性，没有什么是表面所见。此时不能只信肉体的感官，须依靠精神与直觉；内在的恐惧与潜意识意象会浮出，甚至攫住你。",
+    up:"正位：眼下不宜做重大决定，潜入表象之下调查，或耐心等待天亮带来清明。黑暗只是暂时的，守住你的指引之星，便不会惊慌。",
+    rev:"逆位：自省：你是否宁可沉溺于困惑，或用危险、不确定的处境来逃避该承担的责任？",
+    asp:{love:"暧昧迷离，先看清自己的内心。",work:"迷雾重重、信息不明，谨慎判断。",study:"专注力易散，静下心来效率翻倍。",money:"暗流涌动、忌冲动消费与投资。",social:"别轻信表象，谨防误会与欺骗。",health:"情绪敏感，好好休息、睡个好觉。"},
+    art:{hair:"#a394c0",eye:"#5a189a",theme:["#240046","#b8b8d1"],accent:"#a394c0",style:"long",symbol:"☾"} },
+  { id:19, name:"太阳", en:"The Sun", num:"XIX", keys:["成功", "光明", "喜悦", "感恩"],
+    meaning:"原意：太阳是清晰、成功，与历经艰难后因信任内心而结出的喜悦之果。这是温暖明亮的时期，成就有目共睹，生活丰盛充盈。",
+    up:"正位：这段美好或许短暂，但忆起它便能给你继续前行的力量。放下忧虑，练习感恩。",
+    rev:"逆位：别强装快乐、粉饰麻烦，也别凭空想象并不存在的问题。",
+    asp:{love:"热烈甜蜜、公开幸福，感情闪闪发光。",work:"蒸蒸日上、大放异彩，成果耀眼。",study:"成绩亮眼、备受肯定，状态极佳。",money:"财运亨通，慷慨分享更添福气。",social:"阳光开朗、备受欢迎，是大家的开心果。",health:"精力充沛，多晒太阳、多运动。"},
+    art:{hair:"#ffb703",eye:"#ff9e00",theme:["#ffb703","#ff7b00"],accent:"#f0d9a0",style:"twintail",symbol:"☀"} },
+  { id:20, name:"审判", en:"Judgement", num:"XX", keys:["觉醒", "召唤", "重生", "责任"],
+    meaning:"原意：审判是灵性的觉醒与转变之旅的完成——愚者变得更加鲜活，听见了更高的召唤。它连接更宏大的力量、内在的声音与使命，带来灵魂层面的清晰与喜悦。",
+    up:"正位：回应那份召唤，分享你的天赋，去服务于比自身更宏大的事物。",
+    rev:"逆位：诚实自问：你是否忽视了、或曲解了那份召唤，只为合理化自己的欲望？",
+    asp:{love:"旧情复燃、重归于好，或彻底释怀。",work:"关键抉择、迎来转折，勇敢迈出那一步。",study:"总结提升、迎来成果，检验所学。",money:"复盘纠错、谨慎决策，稳字当头。",social:"和解释怀、坦诚相见，心结打开。",health:"全面体检、焕发新生，重启健康计划。"},
+    art:{hair:"#ffffff",eye:"#ef476f",theme:["#f8f9fa","#e0b96a"],accent:"#e0b96a",style:"short",symbol:"♪"} },
+  { id:21, name:"世界", en:"The World", num:"XXI", keys:["圆满", "完成", "整合", "庆祝"],
+    meaning:"原意：世界是愚者之旅的终点——完成、领悟、内在智慧，以及与神圣的连接。你拥有了工具与力量，也有了惠及众生的使命；而生命循环往复，新的旅程已然开启。",
+    up:"正位：花些时间享受成就、接受祝贺、奖赏自己。",
+    rev:"逆位：检视你的完美主义——为什么你无法好好享受、也不敢为自己的成就感到骄傲？",
+    asp:{love:"修成正果、圆满幸福，关系进入新阶段。",work:"项目收官、大获成功，画上完美句号。",study:"顺利毕业、圆满答卷，水到渠成。",money:"收获丰盈、圆满收官，财路开阔。",social:"贵人环绕、皆大欢喜，人脉开花结果。",health:"身心和谐、状态圆满，保持这份好状态。"},
+    art:{hair:"#d4a373",eye:"#b388eb",theme:["#2a9d8f","#e0b96a"],accent:"#e0b96a",style:"long",symbol:"❁"} },
+  { id:22, name:"权杖王牌", en:"Ace of Wands", num:"", keys:["灵感","新契机","活力","开创"],
+    meaning:"原意：权杖王牌象征宇宙递来的一份礼物与机遇，是明确的行动信号。它点燃强烈的表达欲与创造冲动，并许诺启程所需的爆发力。",
+    up:"正位：有一股强烈的冲动想去做点什么——开始新事业、投身公益、创作作品。这张牌是响亮的「前进」许可，抓住这股能量，让项目起飞。",
+    rev:"逆位：错失良机、拖延，或因不满而裹足不前。",
+    asp:{love:"主动表白、热情如火，新恋情一触即发。",work:"新项目新机遇，大胆争取。",study:"灵感涌现，开新课题正当时。",money:"有新的进账机会，积极开拓。",social:"活力四射，带动全场气氛。",health:"精力充沛，适合开启新锻炼计划。"} },
+  { id:23, name:"权杖二", en:"Two of Wands", num:"", keys:["抉择","规划","远见","进取"],
+    meaning:"原意：权杖二象征广阔的机遇与随之而来的选择压力。眼前有多个诱人的目标，但时间精力有限，必须分清主次。",
+    up:"正位：世界尽在你掌握，然而选择的负担也不轻。好消息是每个选项都不错，几乎不会选错——挑一个最想深耕的方向，制定计划走出去。",
+    rev:"逆位：犹豫不决、计划搁浅，或缺乏长远视野。",
+    asp:{love:"关系进入规划期，考虑下一步发展。",work:"站在十字路口，权衡多条路径。",study:"选方向时多方考量，谋定后动。",money:"理财有规划，宜分散布局。",social:"人脉资源丰富，善加经营。",health:"为健康定个长期计划。"} },
+  { id:24, name:"权杖三", en:"Three of Wands", num:"", keys:["远航","展望","合作","等待"],
+    meaning:"原意：权杖三表示选择已定、行动已出，初现成功迹象，但结局尚未揭晓。这是一段等待与期盼的时期。",
+    up:"正位：你已扬帆，正等待属于自己的船驶来。它是否满载而归？保持耐心，同时把目光放远，为更大的版图布局。",
+    rev:"逆位：延迟、气馁、决策失误或分心。",
+    asp:{love:"异地或久别重逢，感情经得起等待。",work:"业务向更大平台拓展，放眼长远。",study:"视野打开，接触新领域。",money:"长期投入初见效，持续关注。",social:"拓展人脉圈，结识远方友人。",health:"恢复期，耐心调养。"} },
+  { id:25, name:"权杖四", en:"Four of Wands", num:"", keys:["庆祝","安定","归属","里程碑"],
+    meaning:"原意：权杖四象征喜悦的庆典与阶段性的圆满——一个值得庆祝的里程碑，一份安稳的归属感。",
+    up:"正位：该庆祝了！无论是乔迁、订婚、项目落地还是考试通过，停下脚步与亲友分享这份喜悦，然后带着安全感继续前行。",
+    rev:"逆位：庆祝推迟，或家庭、团队氛围欠佳。",
+    asp:{love:"关系走向稳定，谈婚论嫁正当时。",work:"项目收官、团队庆功，成果落地。",study:"阶段考试顺利，成绩喜人。",money:"财务进入稳定期，可小庆祝。",social:"聚会喜庆，人缘口碑俱佳。",health:"身心愉悦，状态在线。"} },
+  { id:26, name:"权杖五", en:"Five of Wands", num:"", keys:["竞争","冲突","磨合","挑战"],
+    meaning:"原意：权杖五代表友好的竞争与群体性的挑战——它磨炼技能、激发参与。画面中众人争抢权杖，象征多方角力与观点碰撞。",
+    up:"正位：来一场良性的竞争，彼此切磋、共同进步。会议或聚会里大家集思广益、碰撞火花。别怕冲突，把它当作成长的催化剂。",
+    rev:"逆位：攻击性、争吵或伤人的批评。",
+    asp:{love:"小摩擦不断，需坦诚沟通化解。",work:"竞争激烈，用实力说话。",study:"与同学良性比拼，互相激励。",money:"别跟风攀比消费。",social:"意见分歧多，学会求同存异。",health:"注意运动损伤，量力而行。"} },
+  { id:27, name:"权杖六", en:"Six of Wands", num:"", keys:["胜利","认可","凯旋","掌声"],
+    meaning:"原意：权杖六象征胜利与公开的认可——经过努力，你赢得了应得的荣誉与掌声。",
+    up:"正位：胜利的桂冠属于你。努力终于被看见、被肯定，自信地接受赞美，也别忘了背后支持你的人。",
+    rev:"逆位：功亏一篑、得不到认可，或骄傲自满。",
+    asp:{love:"感情修成正果，得到亲友祝福。",work:"升职加薪、项目获奖。",study:"名列前茅，成绩亮眼。",money:"投资获利，收获颇丰。",social:"成为焦点，声望上升。",health:"身体棒，继续保持。"} },
+  { id:28, name:"权杖七", en:"Seven of Wands", num:"", keys:["坚守","捍卫","勇气","占位"],
+    meaning:"原意：权杖七象征在竞争与压力中坚守自己的位置——你占据高地，面对下方挑战者，需要勇气与决心捍卫成果。",
+    up:"正位：你已占得先机，但挑战接踵而至。站稳脚跟、坚定立场，用勇气守住来之不易的成果。",
+    rev:"逆位：疲于应付、防线失守，或缺乏自信。",
+    asp:{love:"关系受外界干扰，坚定守护。",work:"守住业绩与地位，迎战对手。",study:"巩固知识，顶住竞争压力。",money:"守财有道，防破财。",social:"立场鲜明，不随波逐流。",health:"免疫力略降，注意休息。"} },
+  { id:29, name:"权杖八", en:"Eight of Wands", num:"", keys:["迅捷","进展","消息","行动"],
+    meaning:"原意：权杖八象征万事俱备、箭已离弦——事情已启动并高速推进，结局符合逻辑、顺理成章。",
+    up:"正位：一切都在加速，消息、机会、进展接踵而至，速度可能超乎预期。顺势而为，别在此时强行刹车。",
+    rev:"逆位：混乱、停滞或延误。",
+    asp:{love:"感情进展神速，消息频传。",work:"项目提速，一鼓作气冲刺。",study:"效率爆表，短期突击见效。",money:"资金周转快，把握时机。",social:"社交活跃，联系频繁。",health:"精力旺盛，注意别过度透支。"} },
+  { id:30, name:"权杖九", en:"Nine of Wands", num:"", keys:["坚韧","戒备","最后一程","经验"],
+    meaning:"原意：权杖九象征历经磨砺后的坚韧——你带着伤痕却依然站立，谨慎地守护着已有的成果，距离终点只差最后一程。",
+    up:"正位：你已经走了很远，身上有伤但内心更强大。保持警觉、再坚持一下，最后一段路别松懈。",
+    rev:"逆位：心力交瘁、防御过度，或想放弃。",
+    asp:{love:"受过伤而谨慎，慢慢卸下心防。",work:"咬紧牙关冲刺收官。",study:"冲刺阶段，别临阵松懈。",money:"守住积累，防患未然。",social:"保持距离感，保护自己。",health:"身心疲惫，务必休整。"} },
+  { id:31, name:"权杖十", en:"Ten of Wands", num:"", keys:["负担","责任","负重","超载"],
+    meaning:"原意：权杖十象征沉重的负担与过度的责任——你扛着远超负荷的重担前行，虽接近目标却已疲惫不堪。",
+    up:"正位：你承担得太多了。审视哪些责任真正属于你，学会分担与放手，别一个人扛下所有。",
+    rev:"逆位：卸下重担、学会拒绝，或已不堪重负。",
+    asp:{love:"关系里付出太多，注意平衡。",work:"工作量超载，合理分工。",study:"课业繁重，分清主次。",money:"开销压力大，节流减负。",social:"别做老好人，学会拒绝。",health:"肩颈腰背紧张，注意舒缓。"} },
+  { id:32, name:"权杖侍从", en:"Page of Wands", num:"", keys:["好奇","探索","火花","新讯息"],
+    meaning:"原意：权杖侍从象征一颗跃跃欲试的好奇心——他带来新的灵感火花与讯息，渴望探索未知、尝试新事物。",
+    up:"正位：保持探索的热情，新的兴趣、计划或消息正在萌芽。大胆尝试，别怕三分钟热度，先点燃再说。",
+    rev:"逆位：三分钟热度、方向不明，或缺乏行动力。",
+    asp:{love:"有心动讯号，暧昧升温。",work:"新人新气象，接手新任务。",study:"兴趣广泛，找准方向深耕。",money:"有赚钱新点子，先试水。",social:"活泼外向，带来新鲜话题。",health:"活力足，尝试新运动。"} },
+  { id:33, name:"权杖骑士", en:"Knight of Wands", num:"", keys:["冒险","冲劲","行动派","果敢"],
+    meaning:"原意：权杖骑士象征充满冲劲与冒险精神的行动派——他热烈、果敢、说走就走，带着一腔热血奔向目标。",
+    up:"正位：化激情为行动，勇敢出击、说做就做。这股冲劲能带你突破瓶颈，只是记得兼顾周全。",
+    rev:"逆位：鲁莽冲动、半途而废，或来得快去得快。",
+    asp:{love:"热情追求、攻势猛烈。",work:"雷厉风行，冲锋陷阵。",study:"有冲劲，但需沉下心。",money:"投资宜谨慎，忌冒进。",social:"风风火火，魅力四射。",health:"活力爆棚，注意运动安全。"} },
+  { id:34, name:"权杖王后", en:"Queen of Wands", num:"", keys:["自信","魅力","热情","领导力"],
+    meaning:"原意：权杖王后象征自信、热情与令人瞩目的魅力——她笃定从容、光芒四射，以强大的感染力引领他人。",
+    up:"正位：拥抱你的自信与热情，大胆站到台前。你的魅力与正能量足以感染并带领身边的人。",
+    rev:"逆位：缺乏自信、善妒，或锋芒过露。",
+    asp:{love:"魅力全开，主导关系升温。",work:"领导力强，团队信服。",study:"表现亮眼，备受肯定。",money:"有魄力，敢想敢做。",social:"自带光环，人气高涨。",health:"状态饱满，容光焕发。"} },
+  { id:35, name:"权杖国王", en:"King of Wands", num:"", keys:["远见","领袖","格局","魄力"],
+    meaning:"原意：权杖国王象征成熟的领袖与开拓者——他目光远大、胸怀格局，以魄力与愿景带领众人开创事业。",
+    up:"正位：以大局为重，展现领袖风范。你的远见与魄力能凝聚人心、开疆拓土。",
+    rev:"逆位：独断专行、好大喜功，或缺乏执行力。",
+    asp:{love:"成熟稳重，主导长远规划。",work:"担当重任，开创新局。",study:"目标宏大，统筹安排。",money:"善于布局，做大做强。",social:"威望高，是精神领袖。",health:"精力旺盛，注意劳逸结合。"} },
+  { id:36, name:"圣杯王牌", en:"Ace of Cups", num:"", keys:["新感情","爱意","情感开启","丰沛"],
+    meaning:"原意：圣杯王牌象征丰沛情感的泉源开启——爱、喜悦、同情与新的感情机会如泉水般涌出。",
+    up:"正位：心门打开，新的情感、新的关系、新的喜悦正流入你的生命。敞开心扉去爱、去感受。",
+    rev:"逆位：情感压抑、爱意受阻，或情绪枯竭。",
+    asp:{love:"新恋情萌芽，爱意满溢。",work:"用心投入，工作充满热情。",study:"对所学产生热爱。",money:"财随心安，顺其自然。",social:"真诚待人，收获真情。",health:"情绪滋养身心，状态好。"} },
+  { id:37, name:"圣杯二", en:"Two of Cups", num:"", keys:["结合","两情相悦","默契","和解"],
+    meaning:"原意：圣杯二象征两颗心的相遇与结合——一段平等、互信、彼此吸引的关系正在缔结。",
+    up:"正位：一段美好的连接正在形成：可能是爱情、友情或合作。彼此坦诚、平等相待，关系将稳固而甜蜜。",
+    rev:"逆位：关系失衡、误解或分离。",
+    asp:{love:"两情相悦，关系升温。",work:"合作顺利，一拍即合。",study:"与同学互帮互助。",money:"合作生财，互惠互利。",social:"与挚友默契加深。",health:"身心和谐，状态平稳。"} },
+  { id:38, name:"圣杯三", en:"Three of Cups", num:"", keys:["欢庆","友谊","分享","团聚"],
+    meaning:"原意：圣杯三象征与朋友共享的欢庆与喜悦——举杯同庆，情谊在分享中愈发醇厚。",
+    up:"正位：与好友相聚、分享喜悦的时刻。庆祝你的成就，珍惜身边真挚的情谊。",
+    rev:"逆位：过度放纵、圈子不合，或流言蜚语。",
+    asp:{love:"感情甜蜜，融入彼此生活圈。",work:"团队融洽，聚餐庆功。",study:"与同伴共同进步。",money:"聚会有开销，量入为出。",social:"朋友聚会多，人缘旺。",health:"心情愉悦，注意别熬夜贪杯。"} },
+  { id:39, name:"圣杯四", en:"Four of Cups", num:"", keys:["倦怠","内省","忽视机会","麻木"],
+    meaning:"原意：圣杯四象征内心的倦怠与不满足——你沉浸在自己的世界里，对眼前递来的机会视而不见。",
+    up:"正位：感到无聊、提不起劲？或许机会就在眼前，只是你因麻木而错过了。停下来内省，重新唤醒对生活的热情。",
+    rev:"逆位：走出低谷、重燃兴趣，或接受新机会。",
+    asp:{love:"对关系感到平淡，需新鲜感。",work:"进入倦怠期，找回初心。",study:"学习热情减退，调整状态。",money:"对理财不上心，别错过机会。",social:"暂时想独处，无妨。",health:"情绪低落，注意自我关怀。"} },
+  { id:40, name:"圣杯五", en:"Five of Cups", num:"", keys:["遗憾","失落","沉湎过去","转念"],
+    meaning:"原意：圣杯五象征失落与遗憾——你为打翻的杯子哀伤，却忽略了身后依然立着的两只杯。悲伤真实，但希望尚存。",
+    up:"正位：允许自己为失去而难过，但别忘了转身看看依然拥有的美好。悲伤过后，重新出发。",
+    rev:"逆位：走出阴霾、接纳现实，重拾希望。",
+    asp:{love:"为情所伤，慢慢疗愈。",work:"遭遇挫折，总结经验再战。",study:"成绩不理想，别气馁。",money:"有损失，及时止损。",social:"情绪低落，需要朋友陪伴。",health:"情绪影响身体，注意疏导。"} },
+  { id:41, name:"圣杯六", en:"Six of Cups", num:"", keys:["怀旧","纯真","回忆","温情"],
+    meaning:"原意：圣杯六象征纯真美好的回忆与温情——旧时光、旧友、童年的纯粹再次温暖你的心。",
+    up:"正位：一段怀旧而温暖的时光：老友重逢、旧梦重温。带着这份纯真，也给身边的人送去温柔。",
+    rev:"逆位：沉湎过去、不愿长大，或旧事重提。",
+    asp:{love:"旧情复燃或初恋般纯真。",work:"与旧同事再合作。",study:"温故知新，打好基础。",money:"有旧账回收，财运转顺。",social:"老友重逢，情谊更浓。",health:"回到简单生活，身心放松。"} },
+  { id:42, name:"圣杯七", en:"Seven of Cups", num:"", keys:["幻想","选择","诱惑","迷失"],
+    meaning:"原意：圣杯七象征眼花缭乱的选择与幻梦——众多诱人的选项漂浮眼前，却难辨真假虚实。",
+    up:"正位：选择太多、诱惑太杂，当心被幻想迷惑。静下心分清哪些是真实可行的，哪些只是镜花水月。",
+    rev:"逆位：看清现实、做出决断，或白日梦醒。",
+    asp:{love:"暧昧对象多，别挑花眼。",work:"方案众多，聚焦最重要。",study:"方向多，选定一个深耕。",money:"投资选项杂，谨防陷阱。",social:"应酬多，取舍有度。",health:"注意作息规律，别胡思乱想。"} },
+  { id:43, name:"圣杯八", en:"Eight of Cups", num:"", keys:["离开","追寻","断舍离","更深意义"],
+    meaning:"原意：圣杯八象征转身离开——当现状已无法满足内心，你选择放下已有的，踏上追寻更深意义的路。",
+    up:"正位：内心有个声音在说「该走了」。离开不再滋养你的环境，去追寻真正想要的东西，虽有不舍却值得。",
+    rev:"逆位：犹豫不决、走回头路，或害怕改变。",
+    asp:{love:"感情走到尽头，勇敢转身。",work:"离职或转行，寻找新方向。",study:"换赛道，追寻真正兴趣。",money:"舍弃沉没成本，重新规划。",social:"淡出旧圈子，迎接新朋友。",health:"身心需要一次「出走」调整。"} },
+  { id:44, name:"圣杯九", en:"Nine of Cups", num:"", keys:["如愿","满足","心愿达成","享受"],
+    meaning:"原意：圣杯九象征心愿达成与由衷的满足——「愿望牌」预示你的渴望将成真，尽享成功的喜悦。",
+    up:"正位：你的愿望正在实现！享受这份满足与喜悦，也大方地为自己的努力喝彩。",
+    rev:"逆位：贪得无厌、空欢喜，或满足感短暂。",
+    asp:{love:"感情美满，心想事成。",work:"目标达成，收获认可。",study:"成绩如愿，梦想成真。",money:"财运亨通，梦想照进现实。",social:"聚会开心，分享喜悦。",health:"身心满足，注意别放纵口腹。"} },
+  { id:45, name:"圣杯十", en:"Ten of Cups", num:"", keys:["圆满","幸福家庭","和谐","归宿"],
+    meaning:"原意：圣杯十象征情感的圆满与幸福的归宿——家庭和睦、爱意充盈，是一幅「幸福到满溢」的画面。",
+    up:"正位：幸福满溢的时刻：家庭和睦、情感圆满、内心安宁。珍惜这份珍贵的归属感。",
+    rev:"逆位：家庭失和、理想幻灭，或幸福感打折。",
+    asp:{love:"感情圆满，迈向家庭。",work:"团队和谐，氛围温暖。",study:"有归属感，环境舒心。",money:"家庭财务稳定，共享其成。",social:"家庭聚会温馨，关系融洽。",health:"身心安宁，幸福滋养。"} },
+  { id:46, name:"圣杯侍从", en:"Page of Cups", num:"", keys:["感性","浪漫","讯息","想象力"],
+    meaning:"原意：圣杯侍从象征一颗敏感浪漫的心——他带来温柔的情感讯息与天马行空的想象力。",
+    up:"正位：保持柔软与好奇，一个浪漫的讯息、一份心动的邀约或一个灵感正在靠近。跟着感觉走。",
+    rev:"逆位：情绪化、逃避现实，或过于敏感。",
+    asp:{love:"有暧昧讯息，浪漫萌芽。",work:"创意灵感迸发。",study:"想象力丰富，艺术类尤佳。",money:"凭直觉理财，小试牛刀。",social:"温柔体贴，惹人喜爱。",health:"情绪敏感，多关照内心。"} },
+  { id:47, name:"圣杯骑士", en:"Knight of Cups", num:"", keys:["浪漫骑士","追求","深情","理想主义"],
+    meaning:"原意：圣杯骑士象征浪漫的追求者——他带着深情与理想，为爱、为梦想主动出击。",
+    up:"正位：一位浪漫的使者正在靠近，或你正成为那个为爱追梦的人。用温柔与真诚打动人心。",
+    rev:"逆位：虚情假意、情绪起伏，或理想空谈。",
+    asp:{love:"浪漫追求，攻势温柔。",work:"带着情怀做事，打动人心。",study:"为热爱而学，动力十足。",money:"别被理想冲昏头。",social:"温柔儒雅，人气走高。",health:"情绪波动，注意平稳。"} },
+  { id:48, name:"圣杯王后", en:"Queen of Cups", num:"", keys:["同理心","温柔","直觉","包容"],
+    meaning:"原意：圣杯王后象征温柔、包容与深沉的同理心——她以敏锐的直觉与无私的爱滋养着身边的人。",
+    up:"正位：以温柔与直觉待人，你的包容与共情能疗愈他人。倾听内心，相信你的感受。",
+    rev:"逆位：情绪过载、过度付出，或内心失衡。",
+    asp:{love:"温柔深情，用心经营。",work:"以柔克刚，善解人意。",study:"用心体悟，学得深刻。",money:"凭直觉稳健理财。",social:"是众人的心灵港湾。",health:"情绪主导，注意调节。"} },
+  { id:49, name:"圣杯国王", en:"King of Cups", num:"", keys:["情绪掌控","成熟","慈悲","沉稳"],
+    meaning:"原意：圣杯国王象征情绪的成熟与掌控——他沉稳慈悲，在情感的波涛中保持冷静与智慧。",
+    up:"正位：在情绪的风浪中稳住舵盘。以成熟与慈悲处理情感与关系，你便拥有了真正的力量。",
+    rev:"逆位：情绪失控、冷漠，或压抑情感。",
+    asp:{love:"成熟稳重，情绪稳定。",work:"临危不乱，以德服人。",study:"心态平和，稳步精进。",money:"理性决策，不冲动。",social:"沉稳可靠，值得信赖。",health:"情绪平稳，身心调和。"} },
+  { id:50, name:"宝剑王牌", en:"Ace of Swords", num:"", keys:["清晰","真相","突破","决断"],
+    meaning:"原意：宝剑王牌象征思想的锋芒与真相的显露——它带来清晰、洞见与一锤定音的决断力。",
+    up:"正位：真相大白、思路清晰。此刻你拥有清醒的判断力，做出关键决定、斩断迷雾正当时。",
+    rev:"逆位：思路混乱、真相被掩，或判断失误。",
+    asp:{love:"看清关系真相，坦诚沟通。",work:"洞察本质，果断决策。",study:"豁然开朗，难题迎刃而解。",money:"明辨是非，理性投资。",social:"言语犀利，一针见血。",health:"头脑清晰，注意别用脑过度。"} },
+  { id:51, name:"宝剑二", en:"Two of Swords", num:"", keys:["僵持","权衡","回避","抉择"],
+    meaning:"原意：宝剑二象征内心的僵持与两难——你蒙住双眼，在权衡中逃避那个必须做出的决定。",
+    up:"正位：你正陷入两难，选择回避以维持表面的平静。但真相不会消失，摘下眼罩、直面抉择吧。",
+    rev:"逆位：打破僵局、看清真相，做出决定。",
+    asp:{love:"关系僵持，需打破沉默。",work:"面临两难抉择，权衡利弊。",study:"纠结方向，尽快定夺。",money:"收支僵局，果断调整。",social:"避免正面冲突，但别逃避。",health:"情绪紧绷，放松身心。"} },
+  { id:52, name:"宝剑三", en:"Three of Swords", num:"", keys:["心碎","痛苦","悲伤","疗愈"],
+    meaning:"原意：宝剑三象征心碎与痛苦的真相——三柄剑刺穿心脏，代表难以回避的伤痛与背叛。",
+    up:"正位：一段伤痛正在发生，允许自己悲伤。痛苦是真实的，但穿过它，你会更了解自己的心。",
+    rev:"逆位：走出伤痛、释怀原谅，开始愈合。",
+    asp:{love:"情感受伤，需要疗愈。",work:"遭遇打击，重整旗鼓。",study:"成绩受挫，总结再战。",money:"财务损失，吸取教训。",social:"有人让你失望，慢慢放下。",health:"心痛影响身体，注意情绪宣泄。"} },
+  { id:53, name:"宝剑四", en:"Four of Swords", num:"", keys:["休整","静养","恢复","暂停"],
+    meaning:"原意：宝剑四象征战后的休整与静养——躺下休息，让身心从疲惫与纷争中恢复。",
+    up:"正位：该按下暂停键了。给自己一段安静的时间休息、恢复、蓄力，再重新出发。",
+    rev:"逆位：恢复完毕、重新振作，或休息不足。",
+    asp:{love:"给彼此一点空间，冷静沉淀。",work:"暂时休整，养精蓄锐。",study:"劳逸结合，别硬撑。",money:"暂停大动作，静观其变。",social:"独处充电，无妨。",health:"充分休息，睡眠是良药。"} },
+  { id:54, name:"宝剑五", en:"Five of Swords", num:"", keys:["冲突","输赢","代价","虚胜"],
+    meaning:"原意：宝剑五象征冲突与「赢」的代价——即使争赢了，也往往输掉了关系与和气，是一场空虚的胜利。",
+    up:"正位：你或许赢了这场争执，但代价是什么？想想值不值得，别为一时意气伤了和气。",
+    rev:"逆位：和解、放下争执，或承认失败。",
+    asp:{love:"争吵过后，学会退让。",work:"职场明争暗斗，别逞强。",study:"竞争激烈，别为赢伤和气。",money:"别因好胜而冲动消费。",social:"人际摩擦，退一步海阔天空。",health:"精神紧绷，注意减压。"} },
+  { id:55, name:"宝剑六", en:"Six of Swords", num:"", keys:["过渡","离开","平静","疗愈之旅"],
+    meaning:"原意：宝剑六象征一场平静的过渡——离开动荡，驶向更平静的彼岸，是一场带着伤痕的疗愈之旅。",
+    up:"正位：你正从困境中过渡到平静的水域。带着经验前行，前方的日子会越来越安宁。",
+    rev:"逆位：滞留过去、难以放下，或过渡受阻。",
+    asp:{love:"走出旧情，迎接平静。",work:"跳槽或转岗，平稳过渡。",study:"换个环境，专心学习。",money:"财务慢慢回稳。",social:"远离是非，内心平静。",health:"状态好转，渐入佳境。"} },
+  { id:56, name:"宝剑七", en:"Seven of Swords", num:"", keys:["策略","隐秘","独行","变通"],
+    meaning:"原意：宝剑七象征策略与隐秘的行动——以巧妙甚至有些取巧的方式达成目的，独自谋定而后动。",
+    up:"正位：需要一点策略与变通。用聪明的方式达成目标，但也要留意方式是否坦荡。",
+    rev:"逆位：谎言被揭穿、弄巧成拙，或心生愧疚。",
+    asp:{love:"感情里有隐瞒，需坦诚。",work:"策略取胜，注意分寸。",study:"走捷径有风险，踏实为上。",money:"投机取巧易翻车。",social:"防人之心不可无。",health:"注意隐藏的压力。"} },
+  { id:57, name:"宝剑八", en:"Eight of Swords", num:"", keys:["束缚","自我设限","困局","无力"],
+    meaning:"原意：宝剑八象征自我设限的困局——看似被层层束缚，实则束缚多来自内心，绳结并未锁死。",
+    up:"正位：你觉得自己被困住了，但很多限制其实来自你的内心。解开眼罩，你会发现出路一直都在。",
+    rev:"逆位：挣脱束缚、重获自由，突破困局。",
+    asp:{love:"关系里自我束缚，勇敢表达。",work:"困于现状，主动破局。",study:"畏难情绪，突破心理关。",money:"被观念困住，寻求出路。",social:"别自我封闭，走出去。",health:"心理压力大，学会求助。"} },
+  { id:58, name:"宝剑九", en:"Nine of Swords", num:"", keys:["焦虑","噩梦","忧思","恐惧"],
+    meaning:"原意：宝剑九象征深重的焦虑与忧思——午夜梦回，为莫须有的恐惧辗转难眠。",
+    up:"正位：焦虑与担忧正在侵蚀你的安宁。记住：大部分恐惧只是想象，别让它们绑架你的夜晚。",
+    rev:"逆位：走出焦虑、放下担忧，或承认需要帮助。",
+    asp:{love:"患得患失，别多虑。",work:"压力山大，分解任务。",study:"考前焦虑，放松心态。",money:"为钱焦虑，做务实规划。",social:"情绪低落，找人倾诉。",health:"睡眠受扰，务必重视。"} },
+  { id:59, name:"宝剑十", en:"Ten of Swords", num:"", keys:["终结","谷底","彻底结束","黎明"],
+    meaning:"原意：宝剑十象征一个彻底的终结——背插十剑，看似绝境，却也意味着最坏的已经过去，黎明将至。",
+    up:"正位：某件事走到了尽头，痛苦可能很深，但请相信：最黑暗的时刻已经过去，新的开始正在酝酿。",
+    rev:"逆位：触底反弹、转危为安，或不愿放手。",
+    asp:{love:"关系彻底结束，放下过去。",work:"项目终结，另起炉灶。",study:"低谷已过，触底反弹。",money:"损失到顶，止损重生。",social:"与过去告别，轻装上阵。",health:"大病初愈，好好调养。"} },
+  { id:60, name:"宝剑侍从", en:"Page of Swords", num:"", keys:["好奇","机敏","观察","求知"],
+    meaning:"原意：宝剑侍从象征机敏好奇的头脑——他充满求知欲，善于观察与提问，渴望看清世界的真相。",
+    up:"正位：保持好奇与机敏，大胆提问、深入探究。新的信息与真相正在等你发现。",
+    rev:"逆位：夸夸其谈、多疑，或口无遮拦。",
+    asp:{love:"多观察少冲动，看清对方。",work:"好学上进，快速上手。",study:"求知欲旺盛，进步快。",money:"信息灵通，多方打听。",social:"妙语连珠，但注意分寸。",health:"用脑多，注意休息。"} },
+  { id:61, name:"宝剑骑士", en:"Knight of Swords", num:"", keys:["冲锋","果决","辩论","雷厉风行"],
+    meaning:"原意：宝剑骑士象征疾驰的果决与锋芒——他雷厉风行、直奔目标，思维与行动都快如闪电。",
+    up:"正位：果断出击、直奔目标！这股冲劲能扫清障碍，只是别忘了稍作停留、听听他人意见。",
+    rev:"逆位：冲动鲁莽、咄咄逼人，或口舌之争。",
+    asp:{love:"主动直球，攻势迅猛。",work:"雷厉风行，执行力强。",study:"效率高，但求稳勿躁。",money:"决策快，宜先想清。",social:"言辞犀利，收敛锋芒。",health:"节奏快，注意别透支。"} },
+  { id:62, name:"宝剑王后", en:"Queen of Swords", num:"", keys:["理性","洞察","独立","直言"],
+    meaning:"原意：宝剑王后象征理性与洞察——她独立清醒、直言不讳，以睿智看透表象下的真相。",
+    up:"正位：用理性与清醒看世界。直言不讳是你的力量，也别忘了给判断留一分温柔。",
+    rev:"逆位：冷漠刻薄、心口不一，或过于苛刻。",
+    asp:{love:"理性择偶，宁缺毋滥。",work:"洞察力强，一针见血。",study:"逻辑清晰，分析到位。",money:"精打细算，理性理财。",social:"独立清醒，不随波逐流。",health:"头脑清醒，注意情绪温度。"} },
+  { id:63, name:"宝剑国王", en:"King of Swords", num:"", keys:["智慧","公正","决断","权威"],
+    meaning:"原意：宝剑国王象征智慧与公正的权威——他以清晰的逻辑与公正的立场做出决断，是理性与正义的化身。",
+    up:"正位：以智慧与公正行事。此刻你需要客观、理性与原则，做出经得起推敲的决定。",
+    rev:"逆位：独断专横、冷酷，或滥用权威。",
+    asp:{love:"理性主导，成熟规划。",work:"公正严明，担当裁决。",study:"思维缜密，学业精进。",money:"精明理性，稳健决策。",social:"言而有信，受人敬重。",health:"注意别思虑过度。"} },
+  { id:64, name:"星币王牌", en:"Ace of Pentacles", num:"", keys:["新财富","机遇","落地","丰盛"],
+    meaning:"原意：星币王牌象征物质世界的丰盛开启——一份新的财富、事业或机遇如种子般落入你手中。",
+    up:"正位：一个实实在在的好机会正落在你手中：新工作、新收入、新项目。稳稳接住，脚踏实地耕耘。",
+    rev:"逆位：错失良机、财务不稳，或机会溜走。",
+    asp:{love:"关系踏实，走向稳定。",work:"新工作新项目，前景可期。",study:"学有所用，务实进取。",money:"财运开启，把握良机。",social:"结识贵人，务实交往。",health:"体质增强，打下好基础。"} },
+  { id:65, name:"星币二", en:"Two of Pentacles", num:"", keys:["平衡","灵活","兼顾","变通"],
+    meaning:"原意：星币二象征在变动中寻求平衡——你灵活地玩转手中的多重事务，在忙碌中保持从容。",
+    up:"正位：多线程的生活需要灵活与平衡。调整节奏、分清轻重，你完全能玩转这一切。",
+    rev:"逆位：失衡、手忙脚乱，或顾此失彼。",
+    asp:{love:"平衡感情与生活。",work:"多任务并行，合理分配。",study:"各科兼顾，别偏科。",money:"收支平衡，灵活调度。",social:"人脉经营有度。",health:"劳逸结合，别太满。"} },
+  { id:66, name:"星币三", en:"Three of Pentacles", num:"", keys:["协作","技艺","认可","建造"],
+    meaning:"原意：星币三象征协作与技艺的打磨——众人各展所长、同心建造，你的专业被看见、被认可。",
+    up:"正位：团队协作、打磨技艺的时刻。你的专业能力正获得认可，与伙伴同心合力，成果可期。",
+    rev:"逆位：团队失和、技艺不精，或不被重视。",
+    asp:{love:"关系共同经营，稳步建设。",work:"团队协作，专业被认可。",study:"打好专业基础，学有所成。",money:"合作生财，细水长流。",social:"与伙伴配合默契。",health:"循序渐进，坚持锻炼。"} },
+  { id:67, name:"星币四", en:"Four of Pentacles", num:"", keys:["保守","掌控","囤积","安全感"],
+    meaning:"原意：星币四象征对物质的紧抓与掌控——你牢牢守着所有，源于对安全感的渴求，却也怕失去。",
+    up:"正位：你正努力守护自己的积累，但攥得太紧反而难以腾出手迎接新的可能。适度放手，才能拥有更多。",
+    rev:"逆位：过度吝啬、害怕失去，或开始放手。",
+    asp:{love:"占有欲强，给彼此空间。",work:"守成有余，开放不足。",study:"固步自封，虚心纳新。",money:"守财有道，忌过度抠门。",social:"自我保护，别太封闭。",health:"注意身体僵硬，多活动。"} },
+  { id:68, name:"星币五", en:"Five of Pentacles", num:"", keys:["匮乏","困境","求助","转机"],
+    meaning:"原意：星币五象征物质与精神上的匮乏——在风雪中艰难前行，却也暗示帮助就在身旁，别独自硬扛。",
+    up:"正位：或许正经历经济或心境的低谷，但请记得：你并非孤立无援。主动求助，转机就在不远处。",
+    rev:"逆位：走出困境、获得援助，或境况好转。",
+    asp:{love:"感情里的「贫瘠期」，互相扶持。",work:"处境艰难，寻求支持。",study:"遇到瓶颈，主动请教。",money:"手头紧张，开源节流。",social:"别逞强，接受帮助。",health:"注意保暖与营养。"} },
+  { id:69, name:"星币六", en:"Six of Pentacles", num:"", keys:["给予","受助","慷慨","平衡"],
+    meaning:"原意：星币六象征给予与接受的平衡——财富与善意在流动，付出与回报形成良性的循环。",
+    up:"正位：给予与接受正在良性流动。慷慨助人，也坦然接受他人的帮助，这份平衡会带来福报。",
+    rev:"逆位：施舍的失衡、借贷纠纷，或单方面付出。",
+    asp:{love:"关系里付出与回报平衡。",work:"得到赏识与资源支持。",study:"得到师友帮助，心存感激。",money:"财务流动顺畅，有借有还。",social:"乐于助人，口碑好。",health:"身体得到良好照护。"} },
+  { id:70, name:"星币七", en:"Seven of Pentacles", num:"", keys:["耐心","耕耘","等待","评估"],
+    meaning:"原意：星币七象征耕耘后的耐心等待——你为播种付出了努力，如今停下脚步，评估成果、静候收获。",
+    up:"正位：你已种下种子并辛勤耕耘，现在是耐心等待与评估的时刻。别急着收割，给成长一点时间。",
+    rev:"逆位：急于求成、半途而废，或收获欠佳。",
+    asp:{love:"感情细水长流，耐心经营。",work:"投入需时间回报，别急。",study:"学习是长期投资，坚持。",money:"长线投资，静待回报。",social:"关系需时间沉淀。",health:"调理见效慢，坚持。"} },
+  { id:71, name:"星币八", en:"Eight of Pentacles", num:"", keys:["精进","匠心","勤奋","打磨"],
+    meaning:"原意：星币八象征专注的精进与匠心——你反复打磨技艺，用勤奋与专注追求卓越。",
+    up:"正位：专注于打磨你的技艺，一步一个脚印。勤奋与匠心终将把你送上更高的台阶。",
+    rev:"逆位：粗制滥造、倦怠，或缺乏方向。",
+    asp:{love:"用心经营，越处越深。",work:"精益求精，专业精进。",study:"勤学苦练，熟能生巧。",money:"靠本事赚钱，稳步积累。",social:"低调实干，赢得尊重。",health:"坚持锻炼，效果渐显。"} },
+  { id:72, name:"星币九", en:"Nine of Pentacles", num:"", keys:["独立","富足","优雅","自得"],
+    meaning:"原意：星币九象征独立与富足——你凭自己的努力拥有了体面与优雅，享受一个人的从容自得。",
+    up:"正位：你凭努力赢得了独立与富足，尽享这份优雅与从容。为自己骄傲，也继续享受生活。",
+    rev:"逆位：过度依赖、挥霍，或孤独感。",
+    asp:{love:"独立自信，享受高质量关系。",work:"事业有成，游刃有余。",study:"学业精进，气质养成。",money:"财务自由，享受生活。",social:"优雅得体，气质出众。",health:"状态优雅，身心富足。"} },
+  { id:73, name:"星币十", en:"Ten of Pentacles", num:"", keys:["传承","家族","长久","圆满"],
+    meaning:"原意：星币十象征物质的圆满与传承——财富与家业代代相传，是长久积累的丰盛成果。",
+    up:"正位：丰盛与安稳已至：家业兴旺、根基稳固。珍惜这份传承，为长远未来做好规划。",
+    rev:"逆位：家业纷争、根基动摇，或守成难题。",
+    asp:{love:"感情稳定，考虑成家立业。",work:"事业根基稳，可传承。",study:"为长远目标扎实积累。",money:"财富积累，规划传承。",social:"家族和睦，贵人相助。",health:"注重长期养生。"} },
+  { id:74, name:"星币侍从", en:"Page of Pentacles", num:"", keys:["勤学","务实","起步","潜力"],
+    meaning:"原意：星币侍从象征务实勤学的起步者——他专注投入、脚踏实地，满怀潜力地学习与积累。",
+    up:"正位：带着务实与专注投入新的学习或计划。一步一个脚印，你的潜力正在被看见。",
+    rev:"逆位：拖延懒散、三分钟热度，或眼高手低。",
+    asp:{love:"关系刚刚起步，慢慢培养。",work:"新技能新岗位，踏实学。",study:"打好基础，脚踏实地。",money:"理财入门，从存钱开始。",social:"真诚朴实，值得深交。",health:"养成好习惯，从点滴做起。"} },
+  { id:75, name:"星币骑士", en:"Knight of Pentacles", num:"", keys:["稳健","勤奋","可靠","坚持"],
+    meaning:"原意：星币骑士象征稳健勤奋的实干者——他不求快只求稳，用耐心与可靠把每件事做到位。",
+    up:"正位：稳步推进、持之以恒。这份可靠与勤奋终将带来扎实的成果，慢即是快。",
+    rev:"逆位：固执保守、停滞不前，或效率低下。",
+    asp:{love:"细水长流，稳重可靠。",work:"稳扎稳打，值得信赖。",study:"按部就班，稳步提升。",money:"稳健理财，积少成多。",social:"靠谱踏实，人缘稳。",health:"规律作息，坚持运动。"} },
+  { id:76, name:"星币王后", en:"Queen of Pentacles", num:"", keys:["持家","丰饶","务实","关怀"],
+    meaning:"原意：星币王后象征务实而丰饶的守护者——她既能把日子过得富足，也以温暖细腻的心照顾身边的人。",
+    up:"正位：用心经营生活与家庭，务实中带着温柔。你的关怀让身边的一切都欣欣向荣。",
+    rev:"逆位：过度操劳、忽视自我，或物质主义。",
+    asp:{love:"温柔持家，感情稳定。",work:"务实能干，顾全大局。",study:"踏实勤奋，全面发展。",money:"理财有道，生活富足。",social:"温暖体贴，值得依靠。",health:"注意别过度操劳。"} },
+  { id:77, name:"星币国王", en:"King of Pentacles", num:"", keys:["富足","稳健","成就","经营"],
+    meaning:"原意：星币国王象征物质世界的成功与稳健——他善于经营、根基深厚，是富足与成就的化身。",
+    up:"正位：你已建立起稳固的事业与财富基础。以稳健与智慧继续经营，富足与成功都将稳固长久。",
+    rev:"逆位：贪婪、固执守旧，或只顾眼前。",
+    asp:{love:"给足安全感，关系稳固。",work:"事业巅峰，稳坐江山。",study:"学以致用，成就可期。",money:"财富稳健增长，善经营。",social:"德高望重，人脉深厚。",health:"身体底子好，保持锻炼。"} }
+];
+
+var IMGS = ["cards/00.jpg","cards/01.jpg","cards/02.jpg","cards/03.jpg","cards/04.jpg","cards/05.jpg","cards/06.jpg","cards/07.jpg","cards/08.jpg","cards/09.jpg","cards/10.jpg","cards/11.jpg","cards/12.jpg","cards/13.jpg","cards/14.jpg","cards/15.jpg","cards/16.jpg","cards/17.jpg","cards/18.jpg","cards/19.jpg","cards/20.jpg","cards/21.jpg","cards/22.jpg","cards/23.jpg","cards/24.jpg","cards/25.jpg","cards/26.jpg","cards/27.jpg","cards/28.jpg","cards/29.jpg","cards/30.jpg","cards/31.jpg","cards/32.jpg","cards/33.jpg","cards/34.jpg","cards/35.jpg","cards/36.jpg","cards/37.jpg","cards/38.jpg","cards/39.jpg","cards/40.jpg","cards/41.jpg","cards/42.jpg","cards/43.jpg","cards/44.jpg","cards/45.jpg","cards/46.jpg","cards/47.jpg","cards/48.jpg","cards/49.jpg","cards/50.jpg","cards/51.jpg","cards/52.jpg","cards/53.jpg","cards/54.jpg","cards/55.jpg","cards/56.jpg","cards/57.jpg","cards/58.jpg","cards/59.jpg","cards/60.jpg","cards/61.jpg","cards/62.jpg","cards/63.jpg","cards/64.jpg","cards/65.jpg","cards/66.jpg","cards/67.jpg","cards/68.jpg","cards/69.jpg","cards/70.jpg","cards/71.jpg","cards/72.jpg","cards/73.jpg","cards/74.jpg","cards/75.jpg","cards/76.jpg","cards/77.jpg"];
+function hairBack(style, color){
+  var c = color, p = [];
+  if(style === "short"){
+    p.push('<path d="M58 150 Q60 62 150 58 Q240 62 242 150 L232 190 Q200 214 150 216 Q100 214 68 190 Z" fill="' + c + '"/>');
+  } else if(style === "twinbun"){
+    p.push('<path d="M58 150 Q60 62 150 58 Q240 62 242 150 L232 186 Q200 208 150 210 Q100 208 68 186 Z" fill="' + c + '"/>');
+    p.push('<circle cx="62" cy="66" r="30" fill="' + c + '"/><circle cx="238" cy="66" r="30" fill="' + c + '"/>');
+  } else if(style === "twintail"){
+    p.push('<path d="M58 150 Q60 62 150 58 Q240 62 242 150 L232 190 Q200 212 150 214 Q100 212 68 190 Z" fill="' + c + '"/>');
+    p.push('<path d="M62 120 Q40 200 52 268 Q56 288 70 284 Q82 250 80 180 Z" fill="' + c + '"/>');
+    p.push('<path d="M238 120 Q260 200 248 268 Q244 288 230 284 Q218 250 220 180 Z" fill="' + c + '"/>');
+  } else {
+    p.push('<path d="M58 150 Q60 62 150 58 Q240 62 242 150 L244 270 Q238 292 218 286 Q210 240 208 180 L208 172 Z" fill="' + c + '"/>');
+    p.push('<path d="M58 150 L56 270 Q62 292 82 286 Q90 240 92 180 L92 172 Z" fill="' + c + '"/>');
+    p.push('<path d="M58 150 Q60 62 150 58 Q240 62 242 150 L238 200 Q210 220 150 222 Q90 220 62 200 Z" fill="' + c + '"/>');
+  }
+  return p.join("");
+}
+function fringe(style, color){
+  var c = color;
+  if(style === "twintail"){
+    return '<path d="M70 96 Q96 60 150 56 Q204 60 230 96 Q210 108 150 110 Q90 108 70 96 Z" fill="' + c + '"/>' +
+      '<path d="M96 78 Q104 116 128 112 L120 60 Z" fill="' + c + '"/>' +
+      '<path d="M204 78 Q196 116 172 112 L180 60 Z" fill="' + c + '"/>';
+  }
+  return '<path d="M70 100 Q94 58 150 54 Q206 58 230 100 Q206 112 150 114 Q94 112 70 100 Z" fill="' + c + '"/>';
+}
+function faceSVG(art){
+  var hair=art.hair, eye=art.eye, theme=art.theme, accent=art.accent, style=art.style, symbol=art.symbol;
+  var num=art.num, name=art.name, en=art.en;
+  var skin="#ffe0cf", blush="rgba(255,120,150,.45)";
+  var p = [];
+  p.push('<svg viewBox="0 0 300 500" xmlns="http://www.w3.org/2000/svg">');
+  p.push('<defs>');
+  p.push('<linearGradient id="bg' + num + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + theme[0] + '"/><stop offset="1" stop-color="' + theme[1] + '"/></linearGradient>');
+  p.push('<radialGradient id="glow' + num + '" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#ffffff" stop-opacity=".35"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>');
+  p.push('<radialGradient id="iris' + num + '" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset=".25" stop-color="' + eye + '"/><stop offset="1" stop-color="#201040"/></radialGradient>');
+  p.push('</defs>');
+  p.push('<rect width="300" height="500" rx="20" fill="url(#bg' + num + ')"/>');
+  p.push('<rect x="10" y="10" width="280" height="480" rx="15" fill="none" stroke="' + accent + '" stroke-width="3" opacity=".85"/>');
+  p.push('<rect x="18" y="18" width="264" height="464" rx="12" fill="none" stroke="' + accent + '" stroke-width="1" opacity=".4"/>');
+  p.push('<circle cx="36" cy="36" r="3" fill="' + accent + '"/><circle cx="264" cy="36" r="3" fill="' + accent + '"/>');
+  p.push('<circle cx="36" cy="464" r="3" fill="' + accent + '"/><circle cx="264" cy="464" r="3" fill="' + accent + '"/>');
+  p.push('<rect width="300" height="500" rx="20" fill="url(#glow' + num + ')"/>');
+  p.push('<text x="150" y="62" text-anchor="middle" font-size="26" fill="' + accent + '" font-weight="900">' + symbol + '</text>');
+  p.push('<text x="150" y="96" text-anchor="middle" font-size="20" fill="#fff" opacity=".95" font-weight="800">' + num + '</text>');
+  p.push(hairBack(style, hair));
+  p.push('<ellipse cx="150" cy="200" rx="62" ry="58" fill="' + skin + '"/>');
+  p.push(fringe(style, hair));
+  p.push('<ellipse cx="124" cy="206" rx="16" ry="19" fill="#fff"/>');
+  p.push('<ellipse cx="176" cy="206" rx="16" ry="19" fill="#fff"/>');
+  p.push('<circle cx="124" cy="203" r="11" fill="url(#iris' + num + ')"/>');
+  p.push('<circle cx="176" cy="203" r="11" fill="url(#iris' + num + ')"/>');
+  p.push('<circle cx="124" cy="203" r="5" fill="#17112d"/>');
+  p.push('<circle cx="176" cy="203" r="5" fill="#17112d"/>');
+  p.push('<circle cx="128" cy="199" r="3" fill="#fff"/>');
+  p.push('<circle cx="180" cy="199" r="3" fill="#fff"/>');
+  p.push('<path d="M110 176 q10 -6 20 -1" stroke="' + hair + '" stroke-width="3" fill="none" stroke-linecap="round"/>');
+  p.push('<path d="M170 175 q10 5 20 0" stroke="' + hair + '" stroke-width="3" fill="none" stroke-linecap="round"/>');
+  p.push('<ellipse cx="112" cy="230" rx="12" ry="7" fill="' + blush + '"/>');
+  p.push('<ellipse cx="188" cy="230" rx="12" ry="7" fill="' + blush + '"/>');
+  p.push('<path d="M142 238 q8 9 16 0" stroke="#e5687d" stroke-width="3.5" fill="none" stroke-linecap="round"/>');
+  p.push('<path d="M104 258 Q150 296 196 258 L212 290 Q150 316 88 290 Z" fill="' + theme[1] + '" opacity=".9"/>');
+  p.push('<path d="M120 262 L150 282 L180 262 L150 272 Z" fill="#fff" opacity=".9"/>');
+  p.push('<circle cx="150" cy="280" r="6" fill="' + accent + '"/>');
+  p.push('<text x="150" y="454" text-anchor="middle" font-size="24" fill="#fff" font-weight="900">' + name + '</text>');
+  p.push('<text x="150" y="478" text-anchor="middle" font-size="12" fill="#ffffff" opacity=".7" letter-spacing="2">' + en + '</text>');
+  p.push('</svg>');
+  return p.join("");
+}
+function faceOf(card){ return '<img class="cardimg" src="' + IMGS[card.id] + '" alt="' + card.name + '" draggable="false">'; }
+
+(function(){
+  var box = document.getElementById("stars");
+  var N = 110;
+  for(var i=0;i<N;i++){
+    var s = document.createElement("span");
+    var big = Math.random() < 0.16;
+    var sz = big ? (Math.random()*1.8+2.2).toFixed(1) : (Math.random()*2.0+0.7).toFixed(1);
+    var glow = big ? ";box-shadow:0 0 " + (Math.random()*7+4).toFixed(1) + "px rgba(224,201,160," + (Math.random()*.45+.3).toFixed(2) + ")" : "";
+    s.style.cssText = "position:absolute;left:" + (Math.random()*100).toFixed(2) + "%;top:" + (Math.random()*100).toFixed(2) + "%;width:" + sz + "px;height:" + sz + "px;border-radius:50%;background:" + (big ? "#ffe9c9" : "#fff") + ";opacity:" + (Math.random()*.6+.25).toFixed(2) + glow + ";animation:twinkle " + (Math.random()*3+2).toFixed(1) + "s ease-in-out " + (Math.random()*3).toFixed(1) + "s infinite;";
+    box.appendChild(s);
+  }
+  var moon = document.createElement("div");
+  moon.style.cssText = "position:absolute;right:7%;top:5%;font-size:56px;line-height:1;opacity:.92;text-shadow:0 0 28px rgba(224,201,160,.75),0 0 60px rgba(224,201,160,.4);";
+  moon.textContent = "☾";
+  box.appendChild(moon);
+  for(var j=0;j<3;j++){
+    var sh = document.createElement("span");
+    sh.className = "shoot";
+    sh.style.cssText = "position:absolute;left:" + (Math.random()*55+15).toFixed(1) + "%;top:" + (Math.random()*25+4).toFixed(1) + "%;animation-delay:" + (Math.random()*8).toFixed(1) + "s;";
+    box.appendChild(sh);
+  }
+  var st = document.createElement("style");
+  st.textContent = "@keyframes twinkle{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:.95;transform:scale(1.25)}}" + 
+    ".shoot{width:140px;height:2px;background:linear-gradient(90deg,rgba(255,255,255,.95),transparent);border-radius:2px;opacity:0;animation:shoot 10s linear infinite}" + 
+    "@keyframes shoot{0%{opacity:0;transform:translate(0,0) rotate(-35deg)}2.5%{opacity:.9}5%{opacity:0;transform:translate(-320px,230px) rotate(-35deg)}100%{opacity:0;transform:translate(-320px,230px) rotate(-35deg)}}";
+  document.head.appendChild(st);
+})();
+
+var memStore = {};
+function persistNow(){
+  if(window.pywebview && window.pywebview.api){
+    try { window.pywebview.api.save(memStore); } catch(e){}
+  }
+}
+
+var cardEl = document.getElementById("tarot");
+var faceBox = document.getElementById("faceBox");
+var hint = document.getElementById("hint");
+var reading = document.getElementById("reading");
+var btnAgain = document.getElementById("btnAgain");
+
+var MODE = "full";
+function getDeck(){ return MODE === "major" ? CARDS.slice(0, 22) : CARDS; }
+function todayKey(){
+  var d = new Date();
+  var base = "tarot_" + d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  return MODE === "major" ? (base + "_major") : base;
+}
+function pickCard(){ var deck = getDeck(); return deck[Math.floor(Math.random()*deck.length)]; }
+
+function buildReading(card, isDaily){
+  var tags = card.keys.map(function(k){ return '<span class="tag pos">' + k + '</span>'; }).join("");
+  var aspects = [
+    ["💕","爱情",card.asp.love],["💼","事业",card.asp.work],["📚","学业",card.asp.study],
+    ["💰","财运",card.asp.money],["🤝","人际",card.asp.social],["🌿","健康",card.asp.health]
+  ].map(function(a){ return '<div class="asp"><div class="ico">' + a[0] + '</div><div class="k">' + a[1] + '</div><div class="v">' + a[2] + '</div></div>'; }).join("");
+  reading.innerHTML =
+    '<div class="panel">' +
+      '<div class="panel-head">' +
+        '<div class="panel-card">' + faceOf(card) + '</div>' +
+        '<div class="panel-meta">' +
+          '<div class="card-name">' + (card.num ? card.num + ' · ' : '') + card.name + '<span class="en">' + card.en + '</span></div>' +
+          '<div class="tags">' + tags + '</div>' +
+          '<p class="meaning">' + card.meaning + '</p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="split">' +
+        '<div class="side up"><h4>✦ 正位</h4><p>' + card.up + '</p></div>' +
+        '<div class="side rev"><h4>✦ 逆位</h4><p>' + card.rev + '</p></div>' +
+      '</div>' +
+      '<div class="aspects"><h4>✦ 各方运势解读</h4><div class="aspect-grid">' + aspects + '</div></div>' +
+      '<div class="regen"><div class="date-line">' + (isDaily ? "☾ 今日签 · " : "🎲 娱乐抽 · ") + new Date().toLocaleString("zh-CN",{month:"long",day:"numeric",weekday:"long"}) + '</div></div>' +
+    '</div>';
+  reading.classList.add("show");
+}
+
+function showCard(card, isDaily){
+  faceBox.innerHTML = faceOf(card);
+  cardEl.classList.add("flipped");
+  hint.textContent = isDaily ? ("今日指引 · " + card.name + " · " + card.en) : (card.name + " · " + card.en);
+  btnAgain.style.display = "inline-block";
+  buildReading(card, isDaily);
+  reading.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function doDraw(isDaily){
+  if(cardEl.classList.contains("flipped")){ cardEl.classList.remove("flipped"); reading.classList.remove("show"); }
+  cardEl.classList.add("shake");
+  setTimeout(function(){
+    cardEl.classList.remove("shake");
+    var card = pickCard();
+    if(isDaily){ memStore[todayKey()] = String(card.id); persistNow(); }
+    showCard(card, isDaily);
+  }, 650);
+}
+
+cardEl.addEventListener("click", function(){
+  var saved = memStore[todayKey()];
+  if(saved != null){ return; }
+  doDraw(true);
+});
+btnAgain.addEventListener("click", function(){ doDraw(false); });
+
+function initDaily(){
+  var saved = memStore[todayKey()];
+  if(saved != null){
+    var found = getDeck().find(function(c){ return c.id === Number(saved); }) || pickCard();
+    faceBox.innerHTML = faceOf(found);
+    cardEl.classList.add("flipped");
+    hint.textContent = "今日已抽过啦 · " + found.name + " · " + found.en;
+    btnAgain.style.display = "inline-block";
+    buildReading(found, true);
+  } else {
+    faceBox.innerHTML = faceOf(getDeck()[0]);
+  }
+}
+initDaily();
+window.addEventListener("pywebviewready", function(){
+  if(window.pywebview && window.pywebview.api){
+    window.pywebview.api.load().then(function(data){
+      if(data && typeof data === "object"){
+        for(var k in data){ memStore[k] = data[k]; }
+      }
+      if(memStore["mode"] === "major"){ MODE = "major"; }
+      updateModeBtn();
+      renderCodex();
+      updateFooter();
+      initDaily();
+    }).catch(function(){});
+  }
+});
+
+var grid = document.getElementById("codexGrid");
+var SUIT_GROUPS = [
+  { title:"✦ 大阿卡纳 Major Arcana", start:0, end:21 },
+  { title:"🪵 权杖 Wands", start:22, end:35 },
+  { title:"🍷 圣杯 Cups", start:36, end:49 },
+  { title:"⚔ 宝剑 Swords", start:50, end:63 },
+  { title:"🪙 星币 Pentacles", start:64, end:77 }
+];
+function renderCodex(){
+  var groups = MODE === "major" ? SUIT_GROUPS.slice(0, 1) : SUIT_GROUPS;
+  grid.innerHTML = groups.map(function(g){
+    var group = CARDS.filter(function(c){ return c.id >= g.start && c.id <= g.end; });
+    var inner = group.map(function(c){
+      var label = c.num ? (c.num + ' ' + c.name) : c.name;
+      return '<div class="codex-card" data-id="' + c.id + '">' + faceOf(c) + '<div class="label">' + label + '</div></div>';
+    }).join("");
+    return '<div class="suit-title">' + g.title + '</div>' + inner;
+  }).join("");
+}
+renderCodex();
+grid.addEventListener("click", function(e){
+  var el = e.target.closest(".codex-card");
+  if(!el) return;
+  var card = CARDS.find(function(c){ return c.id === Number(el.dataset.id); });
+  buildReading(card, false);
+  reading.classList.add("show");
+  reading.scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+
+var SPREADS = [
+  { id:"single", name:"单张牌", cards:1, desc:"带一个问题来，抽一张牌回应它",
+    slots:[{name:"指引", hint:"这张牌直接回应你的问题"}],
+    guide:"✨ 一张牌，一个答案。它就是你此刻最需要的指引。" },
+  { id:"timeflow", name:"时间之流", cards:3, desc:"探索时间之流的经典牌阵",
+    slots:[{name:"过去", hint:"已经发生、影响现状的根源"},{name:"现在", hint:"此刻的状态与处境"},{name:"未来", hint:"事情的自然走向"}],
+    guide:"🕐 顺着时间之流，看清事情的来龙去脉与前路方向。" },
+  { id:"triangle", name:"圣三角", cards:3, desc:"过去·现在·未来，经典三段式",
+    slots:[{name:"原因", hint:"问题的根源与背景"},{name:"现状", hint:"当前的实际情况"},{name:"结果", hint:"事情发展的结果"}],
+    guide:"🔺 三层视角，把问题的因果与走向看得明明白白。" },
+  { id:"bms", name:"身心灵", cards:3, desc:"由身而灵，聆听整体自我",
+    slots:[{name:"身", hint:"身体与物质层面"},{name:"心", hint:"情绪与关系层面"},{name:"灵", hint:"精神与内在指引"}],
+    guide:"🧘 从身体到心灵，照见完整的自己。" },
+  { id:"sar", name:"处境·行动·结果", cards:3, desc:"看清·行动·走向",
+    slots:[{name:"处境", hint:"你正处在什么局面"},{name:"行动", hint:"你该采取的行动"},{name:"结果", hint:"行动带来的走向"}],
+    guide:"👣 看清处境，选对行动，坦然迎接结果。" },
+  { id:"choice", name:"二选一", cards:5, desc:"两个选择的取舍决策",
+    slots:[{name:"现状", hint:"问题的核心"},{name:"选择A", hint:"A方向的发展"},{name:"A的结果", hint:"A方向的结局"},{name:"选择B", hint:"B方向的发展"},{name:"B的结果", hint:"B方向的结局"}],
+    guide:"⚖ 两条路铺开来看，哪条更顺眼，答案自会浮现。" },
+  { id:"star", name:"六芒星", cards:7, desc:"正三角看时间，倒三角看应对",
+    slots:[{name:"过去", hint:"过去的因"},{name:"现在", hint:"当下的境"},{name:"未来", hint:"未来的果"},{name:"对策", hint:"应对之道"},{name:"环境", hint:"外部环境"},{name:"阻碍", hint:"希望与阻碍"},{name:"结果", hint:"最终结果"}],
+    guide:"✡ 六芒星六角呼应，最终结果落在中心。" },
+  { id:"celtic", name:"凯尔特十字", cards:10, desc:"最经典全面的深度牌阵",
+    slots:[{name:"现状", hint:"问题核心"},{name:"阻碍", hint:"交叉的阻力"},{name:"根源", hint:"潜意识基础"},{name:"过去", hint:"过往影响"},{name:"目标", hint:"显意识追求"},{name:"未来", hint:"近期走向"},{name:"自我", hint:"你的态度"},{name:"环境", hint:"他人影响"},{name:"希望与恐惧", hint:"内心所盼所惧"},{name:"结果", hint:"最终结局"}],
+    guide:"☘ 十张牌层层剥开，从根源一路看到最终结局。" }
+];
+
+var ASPECTS = [
+  {key:"love", name:"爱情", icon:"💕"},
+  {key:"work", name:"事业", icon:"💼"},
+  {key:"study", name:"学业", icon:"📚"},
+  {key:"money", name:"财运", icon:"💰"},
+  {key:"social", name:"人际", icon:"🤝"},
+  {key:"health", name:"健康", icon:"🌿"},
+  {key:"all", name:"综合运势", icon:"✨"}
+];
+
+var selAspect = null, selSpread = null;
+
+function backSvg(){
+  return '<svg viewBox="0 0 300 500" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="500" rx="20" fill="#3d2f66"/><rect x="10" y="10" width="280" height="480" rx="15" fill="none" stroke="#e0b96a" stroke-width="3"/><rect x="18" y="18" width="264" height="464" rx="12" fill="none" stroke="#e0b96a" stroke-width="1" opacity=".5"/><circle cx="150" cy="200" r="66" fill="none" stroke="rgba(224,185,106,.5)" stroke-width="2"/><text x="150" y="222" text-anchor="middle" font-size="72" fill="#e0b96a">☾</text><text x="150" y="292" text-anchor="middle" font-size="18" fill="#e8c9a0" letter-spacing="3">塔 罗</text></svg>';
+}
+
+function renderChips(){
+  var box = document.getElementById("aspectChips");
+  box.innerHTML = ASPECTS.map(function(a){ return '<div class="chip" data-key="' + a.key + '">' + a.icon + ' ' + a.name + '</div>'; }).join("");
+  box.querySelectorAll(".chip").forEach(function(ch){
+    ch.addEventListener("click", function(){
+      selAspect = ch.dataset.key;
+      box.querySelectorAll(".chip").forEach(function(x){ x.classList.remove("sel"); });
+      ch.classList.add("sel");
+    });
+  });
+}
+
+function renderSpreads(){
+  var box = document.getElementById("spreadCards");
+  box.innerHTML = SPREADS.map(function(s){ return '<div class="spread-card" data-id="' + s.id + '"><div class="s-name">' + s.name + '</div><div class="s-cards">' + s.cards + ' 张牌</div><div class="s-desc">' + s.desc + '</div></div>'; }).join("");
+  box.querySelectorAll(".spread-card").forEach(function(sc){
+    sc.addEventListener("click", function(){
+      selSpread = sc.dataset.id;
+      box.querySelectorAll(".spread-card").forEach(function(x){ x.classList.remove("sel"); });
+      sc.classList.add("sel");
+    });
+  });
+}
+
+function aspectRead(card, aspectKey){
+  if(aspectKey === "all"){ return card.up.replace(/^正位：/, ""); }
+  return card.asp[aspectKey] || card.up.replace(/^正位：/, "");
+}
+
+function slotLine(card, reversed, aspectKey, slot){
+  if(reversed){
+    return "（逆位）" + card.rev.replace(/^逆位：/, "") + " 落在「" + slot.name + "」的位置，提醒：" + aspectRead(card, aspectKey);
+  }
+  return aspectRead(card, aspectKey);
+}
+
+function divineNow(){
+  if(!selAspect || !selSpread){
+    var btn = document.getElementById("btnDivine");
+    btn.textContent = "请先选方面和牌阵哦";
+    setTimeout(function(){ btn.textContent = "✨ 开始占卜"; }, 1300);
+    return;
+  }
+  var spread = SPREADS.find(function(s){ return s.id === selSpread; });
+  var aspect = ASPECTS.find(function(a){ return a.key === selAspect; });
+  var pool = getDeck().slice();
+  var drawn = [];
+  for(var i=0;i<spread.cards;i++){
+    var idx = Math.floor(Math.random()*pool.length);
+    drawn.push({ card: pool.splice(idx,1)[0], reversed: Math.random() < 0.5 });
+  }
+  var result = document.getElementById("divineResult");
+  var backs = spread.slots.map(function(s, i){ return '<div class="slot" id="slot' + i + '"><div class="slot-pos">' + (i+1) + ' · ' + s.name + '</div><div class="slot-card">' + backSvg() + '</div></div>'; }).join("");
+  var cols = spread.cards === 1 ? "cols-1" : (spread.cards <= 5 ? "cols-3" : "cols-4");
+  result.innerHTML = '<div class="divine-title">🔮 ' + aspect.icon + ' ' + aspect.name + ' · ' + spread.name + '</div><div class="slots-grid ' + cols + '">' + backs + '</div><div class="guide-box" id="guideBox" style="display:none">' + spread.guide + '</div>';
+  result.scrollIntoView({behavior:"smooth", block:"start"});
+  spread.slots.forEach(function(s, i){
+    setTimeout(function(){
+      var d = drawn[i];
+      var el = document.getElementById("slot" + i);
+      if(!el) return;
+      el.innerHTML = '<div class="slot-pos">' + (i+1) + ' · ' + s.name + '</div>' +
+        '<div class="slot-card' + (d.reversed ? ' reversed' : '') + '">' + faceOf(d.card) + '</div>' +
+        '<div class="slot-name">' + d.card.name + (d.reversed ? '<span class="rev-tag">逆位</span>' : '<span class="rev-tag up">正位</span>') + '</div>' +
+        '<div class="slot-read">' + slotLine(d.card, d.reversed, selAspect, s) + '</div>';
+      if(i === spread.slots.length - 1){
+        var g = document.getElementById("guideBox");
+        if(g){ g.style.display = "block"; }
+      }
+    }, 500 + i * 650);
+  });
+}
+
+document.getElementById("btnDivine").addEventListener("click", divineNow);
+
+var dailyPanel = document.getElementById("dailyPanel");
+var divinePanel = document.getElementById("divinePanel");
+document.querySelectorAll(".tab").forEach(function(t){
+  t.addEventListener("click", function(){
+    document.querySelectorAll(".tab").forEach(function(x){ x.classList.remove("active"); });
+    t.classList.add("active");
+    if(t.dataset.tab === "daily"){ dailyPanel.style.display = "block"; divinePanel.style.display = "none"; }
+    else { dailyPanel.style.display = "none"; divinePanel.style.display = "block"; }
+  });
+});
+
+renderChips();
+renderSpreads();
+
+function updateModeBtn(){
+  var b = document.getElementById("btnMode");
+  b.textContent = (MODE === "major" ? "☀️ 大阿卡纳 · 22张" : "🔮 标准塔罗 · 78张") + " ⇄";
+}
+function updateFooter(){
+  var el = document.getElementById("footInfo");
+  if(el){ el.textContent = MODE === "major" ? "图鉴全览 22 张大阿卡纳" : "图鉴全览 78 张牌"; }
+}
+function setMode(m){
+  if(MODE === m) return;
+  MODE = m;
+  memStore["mode"] = m;
+  persistNow();
+  updateModeBtn();
+  renderCodex();
+  updateFooter();
+  reading.classList.remove("show");
+  reading.innerHTML = "";
+  initDaily();
+}
+document.getElementById("btnMode").addEventListener("click", function(){
+  setMode(MODE === "major" ? "full" : "major");
+});
+
+window.addEventListener("pywebviewready", function(){
+  try {
+    var info = { time: new Date().toISOString(), chips: document.querySelectorAll("#aspectChips .chip").length, spreads: document.querySelectorAll("#spreadCards .spread-card").length, codex: document.querySelectorAll("#codexGrid .codex-card").length, tabs: document.querySelectorAll(".tab").length };
+    window.pywebview.api.log("SELFTEST " + JSON.stringify(info));
+    setTimeout(function(){
+      var imgs = document.querySelectorAll("#codexGrid .codex-card img");
+      var loaded = 0;
+      for(var j=0;j<imgs.length;j++){ if(imgs[j].complete && imgs[j].naturalWidth > 0) loaded++; }
+      window.pywebview.api.log("IMGCHECK total=" + imgs.length + " loaded=" + loaded + " first=" + (imgs.length ? imgs[0].getAttribute("src") : "none"));
+    }, 2500);
+  } catch(e){ window.pywebview.api.log("SELFTEST_ERR " + e.name); }
+});
+
+</script>
+</body>
+</html>

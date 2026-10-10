@@ -783,6 +783,8 @@ var memStore = {};
 function persistNow(){
   if(window.pywebview && window.pywebview.api){
     try { window.pywebview.api.save(memStore); } catch(e){}
+  } else {
+    try { localStorage.setItem("yueying_mem", JSON.stringify(memStore)); } catch(e){}
   }
 }
 
@@ -868,20 +870,33 @@ function initDaily(){
   }
 }
 initDaily();
+function applyLoaded(){
+  if(memStore["mode"] === "major"){ MODE = "major"; }
+  updateModeBtn();
+  renderCodex();
+  updateFooter();
+  initDaily();
+}
+function loadWeb(){
+  try {
+    var raw = localStorage.getItem("yueying_mem");
+    if(raw){ var d = JSON.parse(raw); if(d && typeof d === "object"){ for(var k in d){ memStore[k] = d[k]; } } }
+  } catch(e){}
+  applyLoaded();
+}
 window.addEventListener("pywebviewready", function(){
   if(window.pywebview && window.pywebview.api){
     window.pywebview.api.load().then(function(data){
       if(data && typeof data === "object"){
         for(var k in data){ memStore[k] = data[k]; }
       }
-      if(memStore["mode"] === "major"){ MODE = "major"; }
-      updateModeBtn();
-      renderCodex();
-      updateFooter();
-      initDaily();
+      applyLoaded();
     }).catch(function(){});
   }
 });
+if(!(window.pywebview && window.pywebview.api)){
+  loadWeb();
+}
 
 var grid = document.getElementById("codexGrid");
 var SUIT_GROUPS = [
