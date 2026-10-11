@@ -74,6 +74,8 @@
   .cardimg{ width:100%; height:100%; object-fit:cover; display:block; }
   .front .cardimg{ border-radius:20px; }
   .slot-card.reversed .cardimg{ transform:rotate(180deg); }
+  .tarot-card.reversed .front .cardimg{ transform:rotate(180deg); }
+  .panel-card.reversed .cardimg{ transform:rotate(180deg); }
 
   .hint{ margin-top:20px; font-size:14px; color:#c5b8e0; letter-spacing:2px; opacity:.9; }
 
@@ -114,6 +116,10 @@
   .side{ border-radius:16px; padding:18px 20px; }
   .side.up{ background:rgba(224,185,106,.12); border:1px solid rgba(224,185,106,.35); }
   .side.rev{ background:rgba(143,134,184,.16); border:1px solid rgba(143,134,184,.4); }
+  .split.single{ grid-template-columns:1fr; }
+  .side.on{ border-width:2px; }
+  .side.up.on{ border-color:rgba(224,185,106,.7); background:rgba(224,185,106,.16); }
+  .side.rev.on{ border-color:rgba(143,134,184,.75); background:rgba(143,134,184,.22); }
   .side h4{ font-size:16px; margin-bottom:10px; letter-spacing:2px; }
   .side.up h4{ color:#e0b96a; }
   .side.rev h4{ color:#b8a6d9; }
@@ -802,50 +808,53 @@ function todayKey(){
   return MODE === "major" ? (base + "_major") : base;
 }
 function pickCard(){ var deck = getDeck(); return deck[Math.floor(Math.random()*deck.length)]; }
+function drawCard(){ var deck = getDeck(); return { card: deck[Math.floor(Math.random()*deck.length)], reversed: Math.random() < 0.5 }; }
 
-function buildReading(card, isDaily){
+function buildReading(card, isDaily, reversed){
   var tags = card.keys.map(function(k){ return '<span class="tag pos">' + k + '</span>'; }).join("");
   var aspects = [
     ["💕","爱情",card.asp.love],["💼","事业",card.asp.work],["📚","学业",card.asp.study],
     ["💰","财运",card.asp.money],["🤝","人际",card.asp.social],["🌿","健康",card.asp.health]
   ].map(function(a){ return '<div class="asp"><div class="ico">' + a[0] + '</div><div class="k">' + a[1] + '</div><div class="v">' + a[2] + '</div></div>'; }).join("");
+  var orientTag = reversed ? '<span class="rev-tag">逆位</span>' : '<span class="rev-tag up">正位</span>';
+  var orientSide = reversed
+    ? '<div class="side rev on"><h4>✦ 逆位</h4><p>' + card.rev + '</p></div>'
+    : '<div class="side up on"><h4>✦ 正位</h4><p>' + card.up + '</p></div>';
   reading.innerHTML =
     '<div class="panel">' +
       '<div class="panel-head">' +
-        '<div class="panel-card">' + faceOf(card) + '</div>' +
+        '<div class="panel-card' + (reversed ? ' reversed' : '') + '">' + faceOf(card) + '</div>' +
         '<div class="panel-meta">' +
-          '<div class="card-name">' + (card.num ? card.num + ' · ' : '') + card.name + '<span class="en">' + card.en + '</span></div>' +
+          '<div class="card-name">' + (card.num ? card.num + ' · ' : '') + card.name + '<span class="en">' + card.en + '</span>' + orientTag + '</div>' +
           '<div class="tags">' + tags + '</div>' +
           '<p class="meaning">' + card.meaning + '</p>' +
         '</div>' +
       '</div>' +
-      '<div class="split">' +
-        '<div class="side up"><h4>✦ 正位</h4><p>' + card.up + '</p></div>' +
-        '<div class="side rev"><h4>✦ 逆位</h4><p>' + card.rev + '</p></div>' +
-      '</div>' +
+      '<div class="split single">' + orientSide + '</div>' +
       '<div class="aspects"><h4>✦ 各方运势解读</h4><div class="aspect-grid">' + aspects + '</div></div>' +
       '<div class="regen"><div class="date-line">' + (isDaily ? "☾ 今日签 · " : "🎲 娱乐抽 · ") + new Date().toLocaleString("zh-CN",{month:"long",day:"numeric",weekday:"long"}) + '</div></div>' +
     '</div>';
   reading.classList.add("show");
 }
 
-function showCard(card, isDaily){
+function showCard(card, isDaily, reversed){
   faceBox.innerHTML = faceOf(card);
   cardEl.classList.add("flipped");
-  hint.textContent = isDaily ? ("今日指引 · " + card.name + " · " + card.en) : (card.name + " · " + card.en);
+  if(reversed){ cardEl.classList.add("reversed"); }
+  hint.textContent = (isDaily ? "今日指引 · " : "") + card.name + " · " + card.en + " · " + (reversed ? "逆位" : "正位");
   btnAgain.style.display = "inline-block";
-  buildReading(card, isDaily);
+  buildReading(card, isDaily, reversed);
   reading.scrollIntoView({behavior:"smooth", block:"nearest"});
 }
 
 function doDraw(isDaily){
-  if(cardEl.classList.contains("flipped")){ cardEl.classList.remove("flipped"); reading.classList.remove("show"); }
+  if(cardEl.classList.contains("flipped")){ cardEl.classList.remove("flipped"); cardEl.classList.remove("reversed"); reading.classList.remove("show"); }
   cardEl.classList.add("shake");
   setTimeout(function(){
     cardEl.classList.remove("shake");
-    var card = pickCard();
-    if(isDaily){ memStore[todayKey()] = String(card.id); persistNow(); }
-    showCard(card, isDaily);
+    var d = drawCard();
+    if(isDaily){ memStore[todayKey()] = JSON.stringify({ id: d.card.id, rev: d.reversed ? 1 : 0 }); persistNow(); }
+    showCard(d.card, isDaily, d.reversed);
   }, 650);
 }
 
@@ -859,12 +868,19 @@ btnAgain.addEventListener("click", function(){ doDraw(false); });
 function initDaily(){
   var saved = memStore[todayKey()];
   if(saved != null){
-    var found = getDeck().find(function(c){ return c.id === Number(saved); }) || pickCard();
+    var id = saved, rev = false;
+    if(typeof saved === "string" && saved.charAt(0) === "{"){
+      try { var o = JSON.parse(saved); id = o.id; rev = !!o.rev; } catch(e){ id = Number(saved); }
+    } else {
+      id = Number(saved);
+    }
+    var found = getDeck().find(function(c){ return c.id === Number(id); }) || pickCard();
     faceBox.innerHTML = faceOf(found);
     cardEl.classList.add("flipped");
-    hint.textContent = "今日已抽过啦 · " + found.name + " · " + found.en;
+    if(rev){ cardEl.classList.add("reversed"); }
+    hint.textContent = "今日已抽过啦 · " + found.name + " · " + found.en + " · " + (rev ? "逆位" : "正位");
     btnAgain.style.display = "inline-block";
-    buildReading(found, true);
+    buildReading(found, true, rev);
   } else {
     faceBox.innerHTML = faceOf(getDeck()[0]);
   }
@@ -894,10 +910,6 @@ window.addEventListener("pywebviewready", function(){
     }).catch(function(){});
   }
 });
-if(!(window.pywebview && window.pywebview.api)){
-  loadWeb();
-}
-
 var grid = document.getElementById("codexGrid");
 var SUIT_GROUPS = [
   { title:"✦ 大阿卡纳 Major Arcana", start:0, end:21 },
@@ -1096,6 +1108,10 @@ window.addEventListener("pywebviewready", function(){
     }, 2500);
   } catch(e){ window.pywebview.api.log("SELFTEST_ERR " + e.name); }
 });
+
+if(!(window.pywebview && window.pywebview.api)){
+  loadWeb();
+}
 
 </script>
 </body>
